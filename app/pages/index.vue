@@ -38,8 +38,8 @@
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const email = ref('')
-const password = ref('')
+const email = ref('admin@hamsuper.test')
+const password = ref('admin123')
 const showPassword = ref(false)
 
 const handleLogin = async () => {

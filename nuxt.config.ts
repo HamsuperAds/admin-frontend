@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       devAdminApiUrl: process.env.DEV_ADMIN_API_URL,
+      devApiUrl: process.env.DEV_API_URL,
     },
   },
   modules: [

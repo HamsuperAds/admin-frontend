@@ -1,21 +1,25 @@
+export type AdStatus = "pending" | "approved" | "rejected" | "expired" | "sold";
+export type PromotionType = "bronze" | "silver" | "gold" | "platinum";
+
 export interface Ad {
-  id: string | number;
+  id: string;
+  user_id: string;
   title: string;
-  description: string;
+  slug: string;
+  category_id: number;
+  subcategory_id: number;
   price: number;
-  category: string;
-  subcategory: string;
-  image: string;
-  location: string;
-  date: string;
-  seller?: {
-    id: string;
-    name: string;
-    rating?: number;
-  };
-  status: "available" | "sold" | "reserved";
-  condition: "new" | "used" | "refurbished";
-  createdAt?: Date;
-  updatedAt?: Date;
-  tags?: string[];
+  state: string;
+  lga: string;
+  town: string;
+  description: string;
+  impressions: number;
+  views: number;
+  likes: number;
+  status: AdStatus;
+  promotion_type: PromotionType;
+  published_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
