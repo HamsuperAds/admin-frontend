@@ -9,56 +9,11 @@
 
             <!-- Navigation -->
             <nav class="flex-1 py-4">
-                <NuxtLink to="/dashboard"
+                <NuxtLink v-for="link in links" :key="link.name" :to="link.to"
                     class="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 transition-colors"
                     active-class="bg-white/20">
-                    <Icon name="lucide:layout-dashboard" class="w-4 h-4" />
-                    <span class="text-sm">Dashboard</span>
-                </NuxtLink>
-
-                <div class="px-4 py-2.5 hover:bg-white/10 transition-colors cursor-pointer group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <Icon name="lucide:users" class="w-4 h-4" />
-                            <span class="text-sm">Users</span>
-                        </div>
-                        <Icon name="lucide:chevron-down" class="w-3 h-3" />
-                    </div>
-                </div>
-
-                <div class="px-4 py-2.5 hover:bg-white/10 transition-colors cursor-pointer group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <Icon name="lucide:megaphone" class="w-4 h-4" />
-                            <span class="text-sm">Ads</span>
-                        </div>
-                        <Icon name="lucide:chevron-down" class="w-3 h-3" />
-                    </div>
-                </div>
-
-                <div class="px-4 py-2.5 hover:bg-white/10 transition-colors cursor-pointer group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <Icon name="lucide:credit-card" class="w-4 h-4" />
-                            <span class="text-sm">Transactions</span>
-                        </div>
-                        <Icon name="lucide:chevron-down" class="w-3 h-3" />
-                    </div>
-                </div>
-
-                <div class="px-4 py-2.5 hover:bg-white/10 transition-colors cursor-pointer group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <Icon name="lucide:help-circle" class="w-4 h-4" />
-                            <span class="text-sm">FAQs</span>
-                        </div>
-                        <Icon name="lucide:chevron-down" class="w-3 h-3" />
-                    </div>
-                </div>
-
-                <NuxtLink to="/admins" class="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 transition-colors">
-                    <Icon name="lucide:shield" class="w-4 h-4" />
-                    <span class="text-sm">Admins & Roles</span>
+                    <Icon :name="link.icon" class="w-4 h-4" />
+                    <span class="text-sm">{{ link.name }}</span>
                 </NuxtLink>
             </nav>
 
@@ -106,4 +61,13 @@
 
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
+const links = [
+    { name: 'Dashboard', to: '/dashboard', icon: 'lucide:layout-dashboard' },
+    { name: 'Users', to: '/users', icon: 'lucide:users' },
+    { name: 'Ads', to: '/ads', icon: 'lucide:megaphone' },
+    { name: 'Transactions', to: '/transactions', icon: 'lucide:credit-card' },
+    { name: 'FAQs', to: '/faqs', icon: 'lucide:help-circle' },
+    { name: 'Admins & Roles', to: '/admins', icon: 'lucide:shield' },
+]
 </script>
