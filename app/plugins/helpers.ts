@@ -1,4 +1,5 @@
 import { useAppResourceInfoStore } from "#imports";
+import type { Admin } from "~/types";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig();
@@ -31,9 +32,9 @@ export default defineNuxtPlugin((nuxtApp) => {
           return typeStr;
         }
       },
-      getAdmin: () => {
-        if (data) {
-          return { ...data.value };
+      getAdmin: (): Admin | null => {
+        if (data.value) {
+          return data.value as Admin;
         }
         return null;
       },
