@@ -21,10 +21,37 @@ export default defineNuxtConfig({
     "shadcn-nuxt",
     "@vueuse/nuxt",
     "@pinia/nuxt",
+    "@sidebase/nuxt-auth",
   ],
   css: ["~/assets/css/tailwind.css", "~/assets/css/main.css"],
   vite: {
     plugins: [tailwindcss()],
+  },
+  auth: {
+    baseURL: process.env.DEV_ADMIN_API_URL,
+    globalAppMiddleware: true,
+    provider: {
+      type: "local",
+      endpoints: {
+        signIn: { path: "auth/sign-in", method: "post" },
+        signOut: { path: "auth/sign-out", method: "post" },
+        signUp: { path: "auth/signup", method: "post" },
+        getSession: {
+          path: "/auth/profile",
+          method: "get",
+        },
+      },
+      session: {
+        dataResponsePointer: "/data",
+      },
+      token: {
+        signInResponseTokenPointer: "data/token",
+        maxAgeInSeconds: 2592000,
+      },
+      pages: {
+        login: "/",
+      },
+    },
   },
   shadcn: {
     prefix: "",

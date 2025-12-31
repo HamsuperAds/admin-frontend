@@ -77,7 +77,7 @@
                             <Avatar class="w-10 h-10">
                                 <AvatarImage :src="user.avatar" :alt="user.name" />
                                 <AvatarFallback class="bg-gray-300 text-gray-700 text-sm">{{ user.initials
-                                    }}</AvatarFallback>
+                                }}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
@@ -132,7 +132,7 @@
                             <Avatar class="w-10 h-10">
                                 <AvatarImage :src="ad.avatar" :alt="ad.name" />
                                 <AvatarFallback class="bg-gray-300 text-gray-700 text-sm">{{ ad.initials
-                                    }}</AvatarFallback>
+                                }}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">{{ ad.name }}</p>

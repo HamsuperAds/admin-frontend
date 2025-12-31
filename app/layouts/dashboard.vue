@@ -19,7 +19,8 @@
 
             <!-- Logout -->
             <div class="p-4 border-t border-white/20">
-                <button class="flex items-center gap-2 text-sm hover:text-white/80 transition-colors">
+                <button @click="useLogout()"
+                    class="flex items-center gap-2 text-sm hover:text-white/80 transition-colors">
                     <Icon name="lucide:log-out" class="w-4 h-4" />
                     <span>Logout</span>
                 </button>
@@ -37,11 +38,9 @@
                 </button>
 
                 <div class="flex items-center gap-2 cursor-pointer">
-                    <Avatar class="w-8 h-8">
-                        <AvatarImage src="" alt="John Doe" />
-                        <AvatarFallback class="bg-gray-300 text-gray-700 text-xs">JD</AvatarFallback>
-                    </Avatar>
-                    <span class="text-sm font-medium text-gray-700">John Doe</span>
+                    <img :src="$getAdmin()?.avatar" class="w-8 h-8">
+                    <span class="text-sm font-medium text-gray-700">{{ $getAdmin()?.first_name }} {{
+                        $getAdmin()?.last_name }}</span>
                     <Icon name="lucide:chevron-down" class="w-4 h-4 text-gray-600" />
                 </div>
             </header>
@@ -60,7 +59,6 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 const links = [
     { name: 'Dashboard', to: '/dashboard', icon: 'lucide:layout-dashboard' },

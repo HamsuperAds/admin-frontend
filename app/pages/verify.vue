@@ -6,32 +6,38 @@
                 <p class="verify-subtitle">Provide your admin credentials</p>
 
                 <p class="verify-instruction">
-                    Enter the verification code that was sent to your email (xyz@example.com)
+                    Enter the verification code that was sent to your email ({{ userInfoStore.adminEmail ||
+                        'xyz@example.com' }})
                 </p>
 
                 <form @submit.prevent="handleVerify" class="verify-form">
+                    <!-- Error Message -->
+                    <div v-if="errorMessage" class="error-message">
+                        {{ errorMessage }}
+                    </div>
+
                     <div class="code-inputs">
                         <input v-for="(digit, index) in verificationCode" :key="index"
                             :ref="el => codeInputs[index] = el" v-model="verificationCode[index]" type="text"
                             inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input"
-                            @input="handleInput(index, $event)" @keydown="handleKeydown(index, $event)" />
+                            @input="handleInput(index, $event)" @keydown="handleKeydown(index, $event)"
+                            :disabled="isLoading" />
                     </div>
 
-                    <button type="submit" class="verify-button" :disabled="!isCodeComplete">
-                        Verify
+                    <button type="submit" class="verify-button" :disabled="!isCodeComplete || isLoading">
+                        {{ isLoading ? 'Verifying...' : 'Verify' }}
                     </button>
 
                     <p class="resend-text">
                         Didn't get the verification code? It may take a while.
                     </p>
 
-                    <button type="button" class="resend-button" :disabled="resendTimer > 0" @click="handleResend">
+                    <button type="button" class="resend-button" :disabled="resendTimer > 0 || isLoading"
+                        @click="handleResend">
                         Resend Code
                     </button>
 
                     <p v-if="resendTimer > 0" class="resend-timer">
-
-                        import { navigateTo } from '#app'
                         Can resend code after <strong>{{ resendTimer }}</strong> seconds.
                     </p>
                 </form>
@@ -41,10 +47,36 @@
 </template>
 
 <script setup lang="ts">
+import { useUserInfoStore } from '~/stores/userInfo'
+
+definePageMeta({
+    auth: {
+        unauthenticatedOnly: true,
+        navigateAuthenticatedTo: "/dashboard",
+    },
+});
+
+const router = useRouter()
+const { getSession } = useAuth();
+const { setToken } = useAuthState();
+const { fetchPost } = useApi()
+const userInfoStore = useUserInfoStore()
+
 const verificationCode = ref(['', '', '', '', ''])
 const codeInputs = ref<HTMLInputElement[]>([])
 const resendTimer = ref(30)
+const isLoading = ref(false)
+const errorMessage = ref('')
 let timerInterval: ReturnType<typeof setInterval> | null = null
+
+// Check if email exists, if not redirect to login
+onMounted(() => {
+    if (!userInfoStore.adminEmail) {
+        router.push('/')
+        return
+    }
+    startTimer()
+})
 
 const startTimer = () => {
     if (timerInterval) {
@@ -83,11 +115,50 @@ const handleKeydown = (index: number, event: KeyboardEvent) => {
     }
 }
 
-const handleVerify = () => {
-    const code = verificationCode.value.join('')
-    console.log('Verification code:', code)
-    // Add your verification logic here
-    navigateTo('/dashboard')
+const handleVerify = async () => {
+    try {
+        isLoading.value = true
+        errorMessage.value = ''
+
+        const code = verificationCode.value.join('')
+
+        const response = await fetchPost<{
+            success: boolean
+            message: string
+            data?: {
+                admin: any
+                token: string
+            }
+        }>('/auth/verify-otp', {
+            email: userInfoStore.adminEmail,
+            otp: code,
+            action: '2fa'
+        }, { requiresAuth: false })
+
+        if (response.success && response.data?.token) {
+            // Set the token
+            setToken(response.data.token)
+
+            // Get session
+            await getSession()
+
+            // Navigate to dashboard
+            await router.push('/dashboard')
+        } else if (!response.success) {
+            errorMessage.value = response.message || 'Invalid or expired OTP code'
+            // Clear the code inputs
+            verificationCode.value = ['', '', '', '', '']
+            codeInputs.value[0]?.focus()
+        }
+    } catch (error: any) {
+        console.error('Verification error:', error)
+        errorMessage.value = error?.data?.message || 'An error occurred during verification. Please try again.'
+        // Clear the code inputs
+        verificationCode.value = ['', '', '', '', '']
+        codeInputs.value[0]?.focus()
+    } finally {
+        isLoading.value = false
+    }
 }
 
 const handleResend = () => {
@@ -95,10 +166,6 @@ const handleResend = () => {
     resendTimer.value = 30
     startTimer()
 }
-
-onMounted(() => {
-    startTimer()
-})
 
 onUnmounted(() => {
     if (timerInterval) {
@@ -156,6 +223,16 @@ onUnmounted(() => {
 .verify-form {
     display: flex;
     flex-direction: column;
+}
+
+.error-message {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
 }
 
 .code-inputs {

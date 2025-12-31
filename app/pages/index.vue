@@ -6,25 +6,32 @@
                 <p class="login-subtitle">Provide your admin credentials</p>
 
                 <form @submit.prevent="handleLogin" class="login-form">
+                    <!-- Error Message -->
+                    <div v-if="errorMessage" class="error-message">
+                        {{ errorMessage }}
+                    </div>
+
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input id="email" v-model="email" type="email" placeholder="Enter your email" required />
+                        <input id="email" v-model="email" type="email" placeholder="Enter your email" required
+                            :disabled="isLoading" />
                     </div>
 
                     <div class="form-group">
                         <label for="password">Password</label>
                         <div class="password-input-wrapper">
                             <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'"
-                                placeholder="Enter password" required />
-                            <button type="button" class="toggle-password" @click="showPassword = !showPassword">
+                                placeholder="Enter password" required :disabled="isLoading" />
+                            <button type="button" class="toggle-password" @click="showPassword = !showPassword"
+                                :disabled="isLoading">
                                 <span v-if="showPassword">👁️</span>
                                 <span v-else>👁️</span>
                             </button>
                         </div>
                     </div>
 
-                    <button type="submit" class="sign-in-button">
-                        Sign in
+                    <button type="submit" class="sign-in-button" :disabled="isLoading">
+                        {{ isLoading ? 'Signing in...' : 'Sign in' }}
                     </button>
 
                     <a href="#" class="forgot-password">Forgot password?</a>
@@ -36,30 +43,50 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { useUserInfoStore } from '~/stores/userInfo'
 
 const router = useRouter()
+const { fetchPost } = useApi()
 const email = ref('admin@hamsuper.test')
 const password = ref('admin123')
 const showPassword = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
+const userInfoStore = useUserInfoStore()
 
 const handleLogin = async () => {
-    console.log('Login attempt:', { email: email.value })
-    // Add your login logic here
-    // After successful login, navigate to verify page
-    await router.push('/verify')
+    try {
+        isLoading.value = true
+        errorMessage.value = ''
+
+        const response = await fetchPost<{
+            success: boolean
+            message: string
+            requires_2fa?: boolean
+        }>('/auth/login', {
+            email: email.value,
+            password: password.value
+        }, { requiresAuth: false })
+
+        if (response.success && response.requires_2fa) {
+            // Store email for verification page
+            userInfoStore.adminEmail = email.value;
+            console.log('login successful');
+            // Navigate to verify page
+            await router.push('/verify')
+        } else if (!response.success) {
+            errorMessage.value = response.message || 'Login failed. Please check your credentials and try again.'
+        }
+    } catch (error: any) {
+        console.error('Login error:', error)
+        errorMessage.value = error?.data?.message || 'An error occurred during login. Please try again.'
+    } finally {
+        isLoading.value = false
+    }
 }
 </script>
 
 <style scoped>
-/* .login-page {
-    min-height: 88vh;
-    background-color: #e8e8e8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-} */
-
 .login-container {
     width: 100%;
     max-width: 400px;
@@ -91,6 +118,16 @@ const handleLogin = async () => {
 .login-form {
     display: flex;
     flex-direction: column;
+}
+
+.error-message {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
 }
 
 .form-group {
