@@ -73,42 +73,81 @@
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="user in users" :key="user.id">
-              <TableCell>{{ user.id }}</TableCell>
+            <TableRow v-if="loading" class="h-24">
+              <TableCell colspan="5" class="text-center text-gray-500">
+                Loading users...
+              </TableCell>
+            </TableRow>
+            <TableRow v-else-if="users.length === 0" class="h-24">
+              <TableCell colspan="5" class="text-center text-gray-500">
+                No users found
+              </TableCell>
+            </TableRow>
+            <TableRow v-else v-for="(user, index) in users" :key="user.id">
+              <TableCell>{{ (pagination.currentPage - 1) * pagination.perPage + index + 1 }}</TableCell>
               <TableCell class="cursor-pointer hover:bg-gray-50" @click="openUserSheet(user)">
                 <div class="flex items-center gap-3">
                   <Avatar class="w-10 h-10">
-                    <AvatarImage :src="user.avatar" :alt="user.name" />
-                    <AvatarFallback class="bg-gray-300 text-gray-700 text-sm">{{ user.initials }}</AvatarFallback>
+                    <AvatarImage :src="user.avatar || undefined" :alt="user.first_name" />
+                    <AvatarFallback class="bg-gray-300 text-gray-700 text-sm">
+                      {{ user.first_name?.[0] }}{{ user.last_name?.[0] }}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
+                    <p class="text-sm font-medium text-gray-900">{{ user.first_name }} {{ user.last_name }}</p>
                     <p class="text-xs text-gray-500">{{ user.email }}</p>
                   </div>
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant="outline" class="bg-green-50 text-green-700 border-green-200 capitalize">
+                <Badge variant="outline" :class="{
+                  'bg-green-50 text-green-700 border-green-200': user.status === 'active',
+                  'bg-yellow-50 text-yellow-700 border-yellow-200': user.status === 'suspended',
+                  'bg-gray-50 text-gray-700 border-gray-200': user.status === 'inactive'
+                }" class="capitalize">
                   {{ user.status }}
                 </Badge>
               </TableCell>
-              <TableCell class="text-gray-500">{{ user.joined }}</TableCell>
+              <TableCell class="text-gray-500">{{ new Date(user.created_at).toLocaleDateString() }}</TableCell>
               <TableCell>
                 <UserActions />
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
+
+        <div class="mt-4 flex justify-end" v-if="pagination.total > 0">
+          <Pagination v-model:page="pagination.currentPage" :total="pagination.total"
+            :items-per-page="pagination.perPage" :sibling-count="1" show-edges :default-page="1">
+            <PaginationContent v-slot="{ items }" class="flex items-center gap-1">
+              <PaginationFirst />
+              <PaginationPrev />
+
+              <template v-for="(item, index) in items">
+                <PaginationItem v-if="item.type === 'page'" :key="index" :value="item.value" as-child>
+                  <Button class="w-10 h-10 p-0"
+                    :variant="item.value === pagination.currentPage ? 'default' : 'outline'">
+                    {{ item.value }}
+                  </Button>
+                </PaginationItem>
+                <PaginationEllipsis v-else :key="item.type" :index="index" />
+              </template>
+
+              <PaginationNext />
+              <PaginationLast />
+            </PaginationContent>
+          </Pagination>
+        </div>
       </CardContent>
     </Card>
 
-    <UserDetailsSheet v-model:open="isSheetOpen" :user="selectedUser" />
+    <UserDetailsSheet v-if="isSheetOpen" v-model:open="isSheetOpen" :user="selectedUser" :loading="loadingDetails" />
   </div>
 </template>
 
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -119,24 +158,97 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationLast,
+  PaginationNext,
+  PaginationPrevious as PaginationPrev,
+  PaginationItem,
+} from '@/components/ui/pagination'
 import UserActions from '@/components/UserActions.vue'
 import UserDetailsSheet from '@/components/UserDetailsSheet.vue'
+import { useApi } from '@/composables/useApi'
+import type { User } from '@/types/user'
 
 definePageMeta({
   layout: 'dashboard'
 })
 
+const api = useApi()
+
 const selectedFilter = ref('All users')
 const searchCriteria = ref('Name')
 const searchQuery = ref('')
+const users = ref<User[]>([])
+const loading = ref(false)
+const loadingDetails = ref(false)
+
+const pagination = ref({
+  currentPage: 1,
+  total: 0,
+  perPage: 15,
+})
 
 const isSheetOpen = ref(false)
-const selectedUser = ref(null)
+const selectedUser = ref<User | null>(null)
 
-const openUserSheet = (user: any) => {
+const fetchUsers = async (page = 1) => {
+  loading.value = true
+  console.log('about to fetch users');
+  try {
+    const response = await api.fetchGet('/users', {
+      params: {
+        current_page: page
+      }
+    })
+
+    if (response) {
+      const data = response as any
+      users.value = data.data.data
+      pagination.value = {
+        currentPage: data.data.current_page,
+        total: data.data.total,
+        perPage: data.data.per_page
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch users:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const openUserSheet = async (user: User) => {
   selectedUser.value = user
   isSheetOpen.value = true
+
+  // Fetch full details
+  loadingDetails.value = true
+  try {
+    const response = await api.fetchGet(`/users/${user.id}`)
+    if (response) {
+      const data = response as any
+      // Merge existing user data with fresh detailed data
+      selectedUser.value = { ...user, ...data.data }
+    }
+  } catch (err) {
+    console.error('Failed to fetch user details:', err)
+  } finally {
+    loadingDetails.value = false
+  }
 }
+
+// Watch for pagination changes
+watch(() => pagination.value.currentPage, (newPage) => {
+  fetchUsers(newPage)
+})
+
+onMounted(() => {
+  fetchUsers()
+})
 
 const userStats = [
   { name: 'Total Users', value: '2,345', icon: 'lucide:users' },
@@ -144,10 +256,4 @@ const userStats = [
   { name: 'Inactive Users', value: '2,345', icon: 'lucide:user-x' },
   { name: 'Suspended Users', value: '2,345', icon: 'lucide:user-minus' }
 ];
-const users = [
-  { id: 1, name: 'Mark Lura', email: 'mlura@gmail.com', joined: '1hr ago', avatar: '', initials: 'ML', status: 'active' },
-  { id: 2, name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT', status: 'active' },
-  { id: 3, name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT', status: 'active' },
-  { id: 4, name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT', status: 'active' }
-]
 </script>

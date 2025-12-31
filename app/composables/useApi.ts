@@ -2,12 +2,13 @@ import type { UseFetchOptions } from "nuxt/app";
 
 export const useApi = () => {
   const config = useRuntimeConfig();
+  const { token } = useAuth();
   const baseURL = config.public.devAdminApiUrl;
 
   // Get token from localStorage or cookie
   const getToken = () => {
     if (process.client) {
-      return localStorage.getItem("authToken") || "";
+      return token.value || "";
     }
     return "";
   };
