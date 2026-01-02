@@ -29,7 +29,9 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2 flex-1 max-w-md">
             <div class="relative flex-1">
-              <Icon name="lucide:search" class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Icon v-if="loadingSearch" name="lucide:loader-2"
+                class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 animate-spin" />
+              <Icon v-else name="lucide:search" class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input v-model="searchQuery" :placeholder="`Find user by ${searchCriteria.toLowerCase()}...`"
                 class="pl-9 h-9" />
             </div>
@@ -150,6 +152,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { watchDebounced } from '@vueuse/core'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -186,6 +189,7 @@ const searchCriteria = ref('Name')
 const searchQuery = ref('')
 const users = ref<User[]>([])
 const loading = ref(false)
+const loadingSearch = ref(false)
 const loadingDetails = ref(false)
 
 const pagination = ref({
@@ -221,6 +225,22 @@ const fetchUsers = async (page = 1) => {
       params.status = status
     }
 
+    // Map search criteria to API param
+    const getSearchParamKey = () => {
+      switch (searchCriteria.value) {
+        case 'Name': return 'name';
+        case 'Email': return 'email';
+        case 'Phone number': return 'phone_number';
+        default: return 'name';
+      }
+    }
+
+    // Add search query if valid
+    if (searchQuery.value && searchQuery.value.length >= 2) {
+      const searchKey = getSearchParamKey()
+      params[searchKey] = searchQuery.value
+    }
+
     const response = await api.fetchGet('/users', {
       params
     })
@@ -247,6 +267,44 @@ watch(selectedFilter, () => {
     currentPage.value = 1
   } else {
     fetchUsers(1)
+  }
+})
+
+// Watch for search query with debounce
+watchDebounced(
+  searchQuery,
+  async (newQuery) => {
+    if (newQuery.length >= 2 || newQuery.length === 0) {
+      loadingSearch.value = true
+      // Reset to first page for new search
+      if (currentPage.value !== 1) {
+        currentPage.value = 1
+        // fetchUsers will be triggered by pagination watcher, so we don't call it here directly if page changes
+        // BUT we need to ensure loadingSearch turns off.
+        // Actually, simpler to just call fetchUsers and handle page reset inside or let watcher handle it.
+        // Let's reset page, wait for tick? No, simpler:
+        // If page is 1, call fetch. If not, set page to 1 (watcher calls fetch).
+        // To ensure spinner stops, fetchUsers manages loading state. 
+        // But fetchUsers sets main loading, not loadingSearch.
+        // Let's handle loadingSearch in the watcher or make fetchUsers handle it?
+        // Let's make fetchUsers turn off loadingSearch just in case.
+      } else {
+        await fetchUsers(1)
+      }
+      loadingSearch.value = false
+    }
+  },
+  { debounce: 500, maxWait: 1000 },
+)
+
+// Also watch search criteria change to re-trigger search immediately if query exists
+watch(searchCriteria, () => {
+  if (searchQuery.value && searchQuery.value.length >= 2) {
+    if (currentPage.value !== 1) {
+      currentPage.value = 1
+    } else {
+      fetchUsers(1)
+    }
   }
 })
 
