@@ -12,7 +12,10 @@
             </div>
             <div>
               <p class="text-sm text-gray-600 mb-1">{{ stat.name }}</p>
-              <p class="text-3xl font-bold text-gray-900">{{ stat.value }}</p>
+              <div v-if="loadingStats" class="flex items-center h-9">
+                <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+              </div>
+              <p v-else class="text-3xl font-bold text-gray-900">{{ stat.value }}</p>
             </div>
           </div>
         </CardContent>
@@ -246,6 +249,7 @@ watch(currentPage, (newPage) => {
 }, { immediate: true })
 
 // User stats
+const loadingStats = ref(true)
 const userStats = ref([
   { name: 'Total Users', value: '0', icon: 'lucide:users' },
   { name: 'Active Users', value: '0', icon: 'lucide:user-check' },
@@ -254,6 +258,7 @@ const userStats = ref([
 ])
 
 const fetchUserStats = async () => {
+  loadingStats.value = true
   try {
     const response = await api.fetchGet('/users/stats')
     if (response) {
@@ -268,6 +273,8 @@ const fetchUserStats = async () => {
     }
   } catch (err) {
     console.error('Failed to fetch user stats:', err)
+  } finally {
+    loadingStats.value = false
   }
 }
 
