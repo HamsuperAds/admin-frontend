@@ -84,7 +84,7 @@
               </TableCell>
             </TableRow>
             <TableRow v-else v-for="(user, index) in users" :key="user.id">
-              <TableCell>{{ (pagination.currentPage - 1) * pagination.perPage + index + 1 }}</TableCell>
+              <TableCell>{{ (currentPage - 1) * pagination.perPage + index + 1 }}</TableCell>
               <TableCell class="cursor-pointer hover:bg-gray-50" @click="openUserSheet(user)">
                 <div class="flex items-center gap-3">
                   <Avatar class="w-10 h-10">
@@ -117,16 +117,15 @@
         </Table>
 
         <div class="mt-4 flex justify-end" v-if="pagination.total > 0">
-          <Pagination v-model:page="pagination.currentPage" :total="pagination.total"
-            :items-per-page="pagination.perPage" :sibling-count="1" show-edges :default-page="1">
+          <Pagination v-model:page="currentPage" :total="pagination.total" :items-per-page="pagination.perPage"
+            :sibling-count="1" show-edges>
             <PaginationContent v-slot="{ items }" class="flex items-center gap-1">
               <PaginationFirst />
               <PaginationPrev />
 
               <template v-for="(item, index) in items">
                 <PaginationItem v-if="item.type === 'page'" :key="index" :value="item.value" as-child>
-                  <Button class="w-10 h-10 p-0"
-                    :variant="item.value === pagination.currentPage ? 'default' : 'outline'">
+                  <Button class="w-10 h-10 p-0" :variant="item.value === currentPage ? 'default' : 'outline'">
                     {{ item.value }}
                   </Button>
                 </PaginationItem>
@@ -187,32 +186,32 @@ const loading = ref(false)
 const loadingDetails = ref(false)
 
 const pagination = ref({
-  currentPage: 1,
   total: 0,
   perPage: 15,
 })
+
+const currentPage = ref(1)
 
 const isSheetOpen = ref(false)
 const selectedUser = ref<User | null>(null)
 
 const fetchUsers = async (page = 1) => {
   loading.value = true
-  console.log('about to fetch users');
+
   try {
     const response = await api.fetchGet('/users', {
       params: {
-        current_page: page
+        current_page: page,
       }
     })
 
     if (response) {
       const data = response as any
       users.value = data.data.data
-      pagination.value = {
-        currentPage: data.data.current_page,
-        total: data.data.total,
-        perPage: data.data.per_page
-      }
+
+      // Only update total and perPage - don't touch currentPage to avoid reset loop
+      pagination.value.total = Number(data.data.total)
+      pagination.value.perPage = Number(data.data.per_page)
     }
   } catch (err) {
     console.error('Failed to fetch users:', err)
@@ -241,14 +240,10 @@ const openUserSheet = async (user: User) => {
   }
 }
 
-// Watch for pagination changes
-watch(() => pagination.value.currentPage, (newPage) => {
+// Watch for pagination changes - immediate: true handles initial load
+watch(currentPage, (newPage) => {
   fetchUsers(newPage)
-})
-
-onMounted(() => {
-  fetchUsers()
-})
+}, { immediate: true })
 
 const userStats = [
   { name: 'Total Users', value: '2,345', icon: 'lucide:users' },
