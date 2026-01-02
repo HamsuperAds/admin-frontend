@@ -72,6 +72,7 @@
             <TableRow>
               <TableHead>S/N</TableHead>
               <TableHead>User</TableHead>
+              <TableHead>Phone number</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Joined</TableHead>
               <TableHead class="w-10"></TableHead>
@@ -79,12 +80,12 @@
           </TableHeader>
           <TableBody>
             <TableRow v-if="loading" class="h-24">
-              <TableCell colspan="5" class="text-center text-gray-500">
+              <TableCell colspan="6" class="text-center text-gray-500">
                 Loading users...
               </TableCell>
             </TableRow>
             <TableRow v-else-if="users.length === 0" class="h-24">
-              <TableCell colspan="5" class="text-center text-gray-500">
+              <TableCell colspan="6" class="text-center text-gray-500">
                 No users found
               </TableCell>
             </TableRow>
@@ -103,6 +104,9 @@
                     <p class="text-xs text-gray-500">{{ user.email }}</p>
                   </div>
                 </div>
+              </TableCell>
+              <TableCell>
+                <span class="text-sm text-gray-700">{{ user.phone_number }}</span>
               </TableCell>
               <TableCell>
                 <Badge variant="outline" :class="{
