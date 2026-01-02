@@ -245,10 +245,34 @@ watch(currentPage, (newPage) => {
   fetchUsers(newPage)
 }, { immediate: true })
 
-const userStats = [
-  { name: 'Total Users', value: '2,345', icon: 'lucide:users' },
-  { name: 'Active Users', value: '2,345', icon: 'lucide:user-check' },
-  { name: 'Inactive Users', value: '2,345', icon: 'lucide:user-x' },
-  { name: 'Suspended Users', value: '2,345', icon: 'lucide:user-minus' }
-];
+// User stats
+const userStats = ref([
+  { name: 'Total Users', value: '0', icon: 'lucide:users' },
+  { name: 'Active Users', value: '0', icon: 'lucide:user-check' },
+  { name: 'Inactive Users', value: '0', icon: 'lucide:user-x' },
+  { name: 'Suspended Users', value: '0', icon: 'lucide:user-minus' }
+])
+
+const fetchUserStats = async () => {
+  try {
+    const response = await api.fetchGet('/users/stats')
+    if (response) {
+      const data = response as any
+      const stats = data.data
+      userStats.value = [
+        { name: 'Total Users', value: stats.total_users.toLocaleString(), icon: 'lucide:users' },
+        { name: 'Active Users', value: stats.active_users.toLocaleString(), icon: 'lucide:user-check' },
+        { name: 'Inactive Users', value: stats.inactive_users.toLocaleString(), icon: 'lucide:user-x' },
+        { name: 'Suspended Users', value: stats.suspended_users.toLocaleString(), icon: 'lucide:user-minus' }
+      ]
+    }
+  } catch (err) {
+    console.error('Failed to fetch user stats:', err)
+  }
+}
+
+// Fetch stats on mount
+onMounted(() => {
+  fetchUserStats()
+})
 </script>
