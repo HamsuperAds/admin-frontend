@@ -198,14 +198,31 @@ const currentPage = ref(1)
 const isSheetOpen = ref(false)
 const selectedUser = ref<User | null>(null)
 
+// Map filter text to API status param
+const getStatusParam = () => {
+  switch (selectedFilter.value) {
+    case 'Active users': return 'active';
+    case 'Inactive users': return 'inactive';
+    case 'Suspended users': return 'suspended';
+    default: return undefined;
+  }
+}
+
 const fetchUsers = async (page = 1) => {
   loading.value = true
 
   try {
+    const params: Record<string, any> = {
+      current_page: page,
+    }
+
+    const status = getStatusParam()
+    if (status) {
+      params.status = status
+    }
+
     const response = await api.fetchGet('/users', {
-      params: {
-        current_page: page,
-      }
+      params
     })
 
     if (response) {
@@ -222,6 +239,16 @@ const fetchUsers = async (page = 1) => {
     loading.value = false
   }
 }
+
+// Watch for filter changes
+watch(selectedFilter, () => {
+  // Reset to first page when filter changes
+  if (currentPage.value !== 1) {
+    currentPage.value = 1
+  } else {
+    fetchUsers(1)
+  }
+})
 
 const openUserSheet = async (user: User) => {
   selectedUser.value = user
