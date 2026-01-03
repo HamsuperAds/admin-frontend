@@ -4,7 +4,13 @@
             <h1 class="text-2xl font-semibold text-gray-800">Frequently Asked Questions (FAQs)</h1>
             <p class="text-sm text-gray-500 mt-2">Total FAQs: {{ faqs.length }}</p>
         </div>
-
+        <div class="text-right mb-4">
+            <Button variant="outline"
+                class="border-blue-200 text-blue-500 hover:bg-blue-50 hover:text-blue-600 h-9 px-4" @click="">
+                <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
+                Add New FAQ
+            </Button>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
             <div v-for="faq in faqs" :key="faq.id"
                 class="p-6 bg-[#F8F9FC] rounded-xl border border-gray-100 flex flex-col">
@@ -75,8 +81,9 @@
     </div>
 </template>
 
+
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -90,114 +97,100 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import type { Faq } from '@/types/faq'
 
 definePageMeta({
     layout: 'dashboard'
 })
 
-interface FAQ {
-    id: number
-    question: string
-    answer: string
-    isEditing: boolean
-    editQuestion: string
-    editAnswer: string
+// Extend Faq type for local editing state
+interface FaqWithEdit extends Faq {
+    isEditing: boolean;
+    editQuestion: string;
+    editAnswer: string;
+    loading?: boolean;
 }
 
-const faqs = ref<FAQ[]>([
-    {
-        id: 1,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
-    },
-    {
-        id: 2,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
-    },
-    {
-        id: 3,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
-    },
-    {
-        id: 4,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
-    },
-    {
-        id: 5,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
-    },
-    {
-        id: 6,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
-    },
-    {
-        id: 7,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
-    },
-    {
-        id: 8,
-        question: 'How many free ads can I create?',
-        answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        isEditing: false,
-        editQuestion: '',
-        editAnswer: ''
+const api = useApi()
+const faqs = ref<FaqWithEdit[]>([])
+const loading = ref(false)
+const faqToDelete = ref<FaqWithEdit | null>(null)
+
+const fetchFaqs = async () => {
+    loading.value = true
+    try {
+        const response = await api.fetchGet('/faqs')
+        if (response) {
+            const data = response as any
+            faqs.value = data.data.map((faq: Faq) => ({
+                ...faq,
+                isEditing: false,
+                editQuestion: '',
+                editAnswer: ''
+            }))
+        }
+    } catch (err) {
+        console.error('Failed to fetch FAQs:', err)
+    } finally {
+        loading.value = false
     }
-])
+}
 
-const faqToDelete = ref<FAQ | null>(null)
-
-const startEditing = (faq: FAQ) => {
+const startEditing = (faq: FaqWithEdit) => {
     faq.editQuestion = faq.question
     faq.editAnswer = faq.answer
     faq.isEditing = true
 }
 
-const cancelEditing = (faq: FAQ) => {
+const cancelEditing = (faq: FaqWithEdit) => {
     faq.isEditing = false
 }
 
-const saveFAQ = (faq: FAQ) => {
-    faq.question = faq.editQuestion
-    faq.answer = faq.editAnswer
-    faq.isEditing = false
-    // Here you would normally make an API call
+const saveFAQ = async (faq: FaqWithEdit) => {
+    if (!faq.editQuestion || !faq.editAnswer) return
+
+    faq.loading = true
+    try {
+        // Using POST with _method=PUT as requested
+        const response = await api.fetchPost(`/faqs/${faq.id}`, {
+            question: faq.editQuestion,
+            answer: faq.editAnswer,
+            _method: 'PUT'
+        })
+
+        if (response) {
+            faq.question = faq.editQuestion
+            faq.answer = faq.editAnswer
+            faq.isEditing = false
+            // Optional: Show success toast
+        }
+    } catch (err) {
+        console.error('Failed to update FAQ:', err)
+        // Optional: Show error toast
+    } finally {
+        faq.loading = false
+    }
 }
 
-const openDeleteDialog = (faq: FAQ) => {
+const openDeleteDialog = (faq: FaqWithEdit) => {
     faqToDelete.value = faq
 }
 
-const confirmDelete = () => {
-    if (faqToDelete.value) {
-        faqs.value = faqs.value.filter(f => f.id !== faqToDelete.value!.id)
-        faqToDelete.value = null
-    }
+const confirmDelete = async () => {
+    if (!faqToDelete.value) return
+
+    // TODO: Implement delete API call when endpoint is known.
+    // For now, keeping local delete logic commented out or just removing from list if user wants local delete only for now?
+    // User only asked for Fetching and Updating. I will leave the Delete logic as local only or placeholder?
+    // I'll keep the local optimized delete based on existing code logic but add a comment.
+    // Actually, user didn't ask for delete implementation. I'll just keep the existing UI logic for delete but maybe not call API yet to be safe, or just leave it.
+    // I'll stick to the existing behavior: removing from local list.
+
+    faqs.value = faqs.value.filter(f => f.id !== faqToDelete.value!.id)
+    faqToDelete.value = null
 }
+
+onMounted(() => {
+    fetchFaqs()
+})
 </script>
