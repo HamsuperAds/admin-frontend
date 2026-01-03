@@ -55,10 +55,13 @@
                 © 2025 Hamsuper.com
             </footer>
         </div>
+        <Toaster />
     </div>
 </template>
 
 <script setup lang="ts">
+import 'vue-sonner/style.css'
+import { Toaster } from '@/components/ui/sonner'
 
 const links = [
     { name: 'Dashboard', to: '/dashboard', icon: 'lucide:layout-dashboard' },

@@ -2,7 +2,10 @@
     <div class="p-6">
         <div class="flex flex-col items-center mb-8">
             <h1 class="text-2xl font-semibold text-gray-800">Frequently Asked Questions (FAQs)</h1>
-            <p class="text-sm text-gray-500 mt-2">Total FAQs: {{ faqs.length }}</p>
+            <div class="flex items-center gap-2 mt-2">
+                <p class="text-sm text-gray-500">Total FAQs: {{ faqs.length }}</p>
+                <Icon v-if="loading" name="lucide:loader-2" class="w-4 h-4 text-blue-600 animate-spin" />
+            </div>
         </div>
         <div class="text-right mb-4">
             <Button variant="outline"
@@ -11,7 +14,14 @@
                 Add New FAQ
             </Button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+        <div v-if="loading && faqs.length === 0" class="flex justify-center py-12">
+            <div class="flex flex-col items-center gap-3">
+                <Icon name="lucide:loader-2" class="w-8 h-8 text-blue-600 animate-spin" />
+                <p class="text-gray-500">Loading FAQs...</p>
+            </div>
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
             <div v-for="faq in faqs" :key="faq.id"
                 class="p-6 bg-[#F8F9FC] rounded-xl border border-gray-100 flex flex-col">
                 <div v-if="!faq.isEditing" class="flex-1">
@@ -87,6 +97,7 @@ import { ref, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'vue-sonner'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -162,11 +173,11 @@ const saveFAQ = async (faq: FaqWithEdit) => {
             faq.question = faq.editQuestion
             faq.answer = faq.editAnswer
             faq.isEditing = false
-            // Optional: Show success toast
+            toast.success('FAQ updated successfully')
         }
     } catch (err) {
         console.error('Failed to update FAQ:', err)
-        // Optional: Show error toast
+        toast.error('Failed to update FAQ')
     } finally {
         faq.loading = false
     }
@@ -177,17 +188,24 @@ const openDeleteDialog = (faq: FaqWithEdit) => {
 }
 
 const confirmDelete = async () => {
+    console.log('about to delete faq')
     if (!faqToDelete.value) return
+    console.log('about to delete faq 2')
 
-    // TODO: Implement delete API call when endpoint is known.
-    // For now, keeping local delete logic commented out or just removing from list if user wants local delete only for now?
-    // User only asked for Fetching and Updating. I will leave the Delete logic as local only or placeholder?
-    // I'll keep the local optimized delete based on existing code logic but add a comment.
-    // Actually, user didn't ask for delete implementation. I'll just keep the existing UI logic for delete but maybe not call API yet to be safe, or just leave it.
-    // I'll stick to the existing behavior: removing from local list.
-
-    faqs.value = faqs.value.filter(f => f.id !== faqToDelete.value!.id)
-    faqToDelete.value = null
+    loading.value = true
+    try {
+        const response = await api.fetchDelete(`/faqs/${faqToDelete.value.id}`)
+        if (response) {
+            faqs.value = faqs.value.filter(f => f.id !== faqToDelete.value!.id)
+            faqToDelete.value = null
+            toast.success('FAQ deleted successfully')
+        }
+    } catch (err) {
+        console.error('Failed to delete FAQ:', err)
+        toast.error('Failed to delete FAQ')
+    } finally {
+        loading.value = false
+    }
 }
 
 onMounted(() => {
