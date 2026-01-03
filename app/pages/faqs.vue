@@ -66,7 +66,7 @@
         </div>
 
         <!-- Delete Confirmation Dialog -->
-        <AlertDialog :open="!!faqToDelete" @update:open="faqToDelete = null">
+        <AlertDialog :open="isDeleteDialogOpen" @update:open="val => isDeleteDialogOpen = val">
             <AlertDialogContent class="max-w-[400px] p-6 rounded-2xl">
                 <AlertDialogHeader>
                     <AlertDialogTitle class="text-xl font-bold">Delete FAQ?</AlertDialogTitle>
@@ -183,21 +183,23 @@ const saveFAQ = async (faq: FaqWithEdit) => {
     }
 }
 
+
+const isDeleteDialogOpen = ref(false)
+
 const openDeleteDialog = (faq: FaqWithEdit) => {
     faqToDelete.value = faq
+    isDeleteDialogOpen.value = true
 }
 
 const confirmDelete = async () => {
-    console.log('about to delete faq')
     if (!faqToDelete.value) return
-    console.log('about to delete faq 2')
 
     loading.value = true
     try {
         const response = await api.fetchDelete(`/faqs/${faqToDelete.value.id}`)
         if (response) {
             faqs.value = faqs.value.filter(f => f.id !== faqToDelete.value!.id)
-            faqToDelete.value = null
+            isDeleteDialogOpen.value = false
             toast.success('FAQ deleted successfully')
         }
     } catch (err) {
@@ -205,6 +207,10 @@ const confirmDelete = async () => {
         toast.error('Failed to delete FAQ')
     } finally {
         loading.value = false
+        // Clear faqToDelete after dialog close animation or when logic is done
+        if (!isDeleteDialogOpen.value) {
+            faqToDelete.value = null
+        }
     }
 }
 
