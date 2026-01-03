@@ -33,7 +33,11 @@
                 class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 animate-spin" />
               <Icon v-else name="lucide:search" class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input v-model="searchQuery" :placeholder="`Find user by ${searchCriteria.toLowerCase()}...`"
-                class="pl-9 h-9" />
+                class="pl-9 h-9 pr-8" />
+              <button v-if="searchQuery" @click="searchQuery = ''"
+                class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600">
+                <Icon name="lucide:x" class="h-4 w-4" />
+              </button>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
