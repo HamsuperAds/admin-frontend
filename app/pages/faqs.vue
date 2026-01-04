@@ -8,12 +8,36 @@
             </div>
         </div>
         <div class="text-right mb-4">
-            <Button variant="outline"
-                class="border-blue-200 text-blue-500 hover:bg-blue-50 hover:text-blue-600 h-9 px-4" @click="">
+            <Button v-if="!isCreating" variant="outline"
+                class="border-blue-200 text-blue-500 hover:bg-blue-50 hover:text-blue-600 h-9 px-4"
+                @click="startCreating">
                 <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
                 Add New FAQ
             </Button>
         </div>
+
+        <div v-if="isCreating" class="max-w-xl mx-auto">
+            <div class="p-6 bg-[#F8F9FC] rounded-xl border border-gray-100 flex flex-col space-y-4">
+                <h3 class="text-lg font-bold text-gray-800 text-center mb-2">Create New FAQ</h3>
+                <Input v-model="newQuestion" placeholder="Enter question" class="text-center font-bold" />
+                <Textarea v-model="newAnswer" placeholder="Enter answer" class="min-h-[100px] text-sm" />
+
+                <div class="flex justify-end gap-3 mt-4">
+                    <Button variant="outline" class="border-gray-300 text-gray-700 hover:bg-gray-50 h-9 px-4"
+                        @click="cancelCreating">
+                        <Icon name="lucide:x-circle" class="w-4 h-4 mr-2" />
+                        Cancel
+                    </Button>
+                    <Button class="bg-blue-500 hover:bg-blue-600 text-white h-9 px-4" :disabled="creatingLoading"
+                        @click="createFAQ">
+                        <Icon v-if="creatingLoading" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                        <Icon v-else name="lucide:save" class="w-4 h-4 mr-2" />
+                        Create
+                    </Button>
+                </div>
+            </div>
+        </div>
+
         <div v-if="loading && faqs.length === 0" class="flex justify-center py-12">
             <div class="flex flex-col items-center gap-3">
                 <Icon name="lucide:loader-2" class="w-8 h-8 text-blue-600 animate-spin" />
@@ -21,7 +45,7 @@
             </div>
         </div>
 
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+        <div v-else-if="!isCreating" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
             <div v-for="faq in faqs" :key="faq.id"
                 class="p-6 bg-[#F8F9FC] rounded-xl border border-gray-100 flex flex-col">
                 <div v-if="!faq.isEditing" class="flex-1">
@@ -92,6 +116,7 @@
 </template>
 
 
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
@@ -127,6 +152,12 @@ const faqs = ref<FaqWithEdit[]>([])
 const loading = ref(false)
 const faqToDelete = ref<FaqWithEdit | null>(null)
 
+// Creation state
+const isCreating = ref(false)
+const newQuestion = ref('')
+const newAnswer = ref('')
+const creatingLoading = ref(false)
+
 const fetchFaqs = async () => {
     loading.value = true
     try {
@@ -144,6 +175,49 @@ const fetchFaqs = async () => {
         console.error('Failed to fetch FAQs:', err)
     } finally {
         loading.value = false
+    }
+}
+
+const startCreating = () => {
+    isCreating.value = true
+    newQuestion.value = ''
+    newAnswer.value = ''
+}
+
+const cancelCreating = () => {
+    isCreating.value = false
+    newQuestion.value = ''
+    newAnswer.value = ''
+}
+
+const createFAQ = async () => {
+    if (!newQuestion.value || !newAnswer.value) return
+
+    creatingLoading.value = true
+    try {
+        const response = await api.fetchPost('/faqs', {
+            question: newQuestion.value,
+            answer: newAnswer.value
+        })
+
+        if (response) {
+            const data = response as any
+            // Add new FAQ to the list
+            const newFaq: FaqWithEdit = {
+                ...data.data,
+                isEditing: false,
+                editQuestion: '',
+                editAnswer: ''
+            }
+            faqs.value.unshift(newFaq)
+            toast.success('FAQ created successfully')
+            cancelCreating()
+        }
+    } catch (err) {
+        console.error('Failed to create FAQ:', err)
+        toast.error('Failed to create FAQ')
+    } finally {
+        creatingLoading.value = false
     }
 }
 
