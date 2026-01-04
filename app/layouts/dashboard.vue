@@ -68,7 +68,8 @@ const links = [
     { name: 'Users', to: '/users', icon: 'lucide:users' },
     { name: 'Ads', to: '/ads', icon: 'lucide:megaphone' },
     { name: 'Transactions', to: '/transactions', icon: 'lucide:credit-card' },
-    { name: 'FAQs', to: '/faqs', icon: 'lucide:help-circle' },
-    { name: 'Admins & Roles', to: '/admins', icon: 'lucide:shield' },
+    { name: 'Categories', to: '/categories', icon: 'lucide:list-tree' },
+    { name: 'Admins', to: '/admins', icon: 'lucide:shield-check' },
+    { name: 'Faq', to: '/faqs', icon: 'lucide:help-circle' },
 ]
 </script>
