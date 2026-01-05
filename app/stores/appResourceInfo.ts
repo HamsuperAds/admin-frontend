@@ -10,5 +10,5 @@ export const useAppResourceInfoStore = defineStore("appResourceInfoStore", {
     subcategories: [] as Subcategory[],
   }),
   getters: {},
-  actions: {},
+  actions: {},  
 });
