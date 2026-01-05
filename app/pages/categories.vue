@@ -168,7 +168,8 @@
             </TabsContent>
         </Tabs>
 
-        <SubcategoryDetailsSheet v-model:open="isSubcategorySheetOpen" :subcategory="selectedSubcategory" />
+        <SubcategoryDetailsSheet @updated="fetchSubcategories" v-model:open="isSubcategorySheetOpen"
+            :subcategory="selectedSubcategory" />
     </div>
 </template>
 

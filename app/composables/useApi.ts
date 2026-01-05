@@ -57,8 +57,10 @@ export const useApi = () => {
   ): Promise<T> => {
     const { requiresAuth = true, ...fetchOptions } = options;
 
+    const isFormData = fetchOptions.body instanceof FormData;
+
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...((fetchOptions.headers as Record<string, string>) || {}),
     };
 
@@ -131,10 +133,11 @@ export const useApi = () => {
     body?: any,
     options?: RequestInit & { requiresAuth?: boolean }
   ) => {
+    const isFormData = body instanceof FormData;
     return apiFetch<T>(endpoint, {
       ...options,
       method: "POST",
-      body: JSON.stringify(body),
+      body: isFormData ? body : JSON.stringify(body),
     });
   };
 
@@ -143,10 +146,11 @@ export const useApi = () => {
     body?: any,
     options?: RequestInit & { requiresAuth?: boolean }
   ) => {
+    const isFormData = body instanceof FormData;
     return apiFetch<T>(endpoint, {
       ...options,
       method: "PUT",
-      body: JSON.stringify(body),
+      body: isFormData ? body : JSON.stringify(body),
     });
   };
 

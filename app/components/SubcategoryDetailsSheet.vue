@@ -6,8 +6,20 @@
             </SheetHeader>
             <div v-if="subcategory" class="py-6 space-y-6 h-[calc(100vh-1rem)] overflow-y-auto custom-scroll">
                 <div class="flex flex-col items-center gap-4">
-                    <div class="w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
-                        <img :src="subcategory.image" :alt="subcategory.name" class="w-full h-full object-cover">
+                    <div class="relative group cursor-pointer" @click="triggerFileInput">
+                        <div
+                            class="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border-2 border-transparent group-hover:border-blue-500 transition-all">
+                            <img :src="previewImage || subcategory.image" :alt="subcategory.name"
+                                class="w-full h-full object-cover" :class="{ 'opacity-50': isUploadingImage }">
+                        </div>
+                        <div
+                            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="bg-black/50 p-2 rounded-full text-white">
+                                <Icon v-if="isUploadingImage" name="lucide:loader-2" class="w-5 h-5 animate-spin" />
+                                <Icon v-else name="lucide:camera" class="w-5 h-5" />
+                            </div>
+                        </div>
+                        <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleFileChange">
                     </div>
                     <div class="text-center">
                         <h3 class="text-lg font-semibold text-gray-900">{{ subcategory.name }}</h3>
@@ -43,6 +55,10 @@
                         </div>
                     </div>
                 </div>
+                <div class="text-center">
+                    <Button variant="destructive" @click="deactivateSubcategory">Deactivate {{ subcategory.name
+                        }}</Button>
+                </div>
                 <div class="space-y-4 pt-4 border-t border-gray-100">
                     <h4 class="text-sm font-semibold text-gray-900">Attributes</h4>
                     <div v-if="loadingAttributes" class="flex justify-center py-4">
@@ -59,7 +75,7 @@
                                     @update:model-value="(val) => toggleAttribute(attr, !!val)" />
                                 <label :for="`attr-${attr.id}`" class="text-sm font-medium leading-none cursor-pointer">
                                     {{ attr.name }} <span class="text-xs text-gray-400 font-normal">({{ attr.type
-                                        }})</span>
+                                    }})</span>
                                 </label>
                             </div>
                         </div>
@@ -90,7 +106,7 @@ const props = defineProps<{
     subcategory: Subcategory | null
 }>()
 
-const emit = defineEmits(['update:open'])
+const emit = defineEmits(['update:open', 'updated'])
 
 const api = useApi()
 
@@ -98,6 +114,58 @@ const categoryAttributes = ref<Attribute[]>([])
 const checkedMap = reactive<Record<number, boolean>>({})
 const togglingAttributes = ref<Set<number>>(new Set())
 const loadingAttributes = ref(false)
+
+const fileInput = ref<HTMLInputElement | null>(null)
+const isUploadingImage = ref(false)
+const previewImage = ref<string | null>(null)
+
+const triggerFileInput = () => {
+    if (isUploadingImage.value) return
+    fileInput.value?.click()
+}
+
+const handleFileChange = async (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file || !props.subcategory) return
+
+    // Show preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+        previewImage.value = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+
+    await uploadSubcategoryImage(file)
+}
+
+const uploadSubcategoryImage = async (file: File) => {
+    if (!props.subcategory) return
+
+    isUploadingImage.value = true
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('_method', 'PUT')
+
+    try {
+        const res: any = await api.fetchPost(`/subcategories/${props.subcategory.id}`, formData)
+        if (res && res.success) {
+            toast.success('Subcategory image updated')
+            // Emit updated event if parent needs to know
+            emit('updated')
+        } else {
+            throw new Error(res?.message || 'Failed to update image')
+        }
+    } catch (err) {
+        console.error('Failed to upload image', err)
+        toast.error('Failed to update image')
+        // Revert preview on error
+        previewImage.value = null
+    } finally {
+        isUploadingImage.value = false
+        if (fileInput.value) fileInput.value.value = ''
+    }
+}
 
 const fetchAttributes = async () => {
     if (!props.subcategory) return
@@ -169,12 +237,30 @@ const toggleAttribute = async (attribute: Attribute, isChecked: boolean) => {
     }
 }
 
+const deactivateSubcategory = async () => {
+    if (!props.subcategory) return
+
+    try {
+        const res: any = await api.fetchDelete(`/subcategories/${props.subcategory.id}`)
+        if (res && res.success) {
+            toast.success(res.message || 'Subcategory deactivated successfully')
+            emit('update:open', false)
+        } else {
+            throw new Error(res?.message || 'Failed to deactivate subcategory')
+        }
+    } catch (err) {
+        console.error('Failed to deactivate subcategory', err)
+        toast.error('Failed to deactivate subcategory')
+    }
+}
+
 watch(() => props.open, (isOpen) => {
     if (isOpen && props.subcategory) {
         fetchAttributes()
     } else if (!isOpen) {
         categoryAttributes.value = []
         Object.keys(checkedMap).forEach(key => delete checkedMap[Number(key)])
+        previewImage.value = null
     }
 })
 
