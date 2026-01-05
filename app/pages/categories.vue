@@ -43,7 +43,7 @@
                                     </TableCell>
                                 </TableRow>
                                 <TableRow v-else v-for="category in categories" :key="category.id"
-                                    class="cursor-pointer hover:bg-gray-50" @click="filterSubcategories(category)">
+                                    class="hover:bg-gray-50">
                                     <TableCell class="font-medium">{{ category.id }}</TableCell>
                                     <TableCell>
                                         <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100">
@@ -51,7 +51,9 @@
                                                 class="w-full h-full object-cover">
                                         </div>
                                     </TableCell>
-                                    <TableCell class="font-medium text-gray-900">{{ category.name }}</TableCell>
+                                    <TableCell
+                                        class="font-medium text-gray-900 cursor-pointer text-blue-600 hover:underline"
+                                        @click="filterSubcategories(category)">{{ category.name }}</TableCell>
                                     <TableCell>{{ category.adsCount }}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline"
