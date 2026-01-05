@@ -56,8 +56,13 @@
                     </div>
                 </div>
                 <div class="text-center">
-                    <Button variant="destructive" @click="deactivateSubcategory">Deactivate {{ subcategory.name
-                        }}</Button>
+                    <Button variant="outline" :class="{
+                        'border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700': subcategory.is_active,
+                        'border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700': !subcategory.is_active
+                    }" :disabled="isTogglingStatus" @click="toggleSubcategoryStatus">
+                        <Icon v-if="isTogglingStatus" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                        {{ subcategory.is_active ? 'Deactivate' : 'Activate' }} {{ subcategory.name }}
+                    </Button>
                 </div>
                 <div class="space-y-4 pt-4 border-t border-gray-100">
                     <h4 class="text-sm font-semibold text-gray-900">Attributes</h4>
@@ -114,6 +119,7 @@ const categoryAttributes = ref<Attribute[]>([])
 const checkedMap = reactive<Record<number, boolean>>({})
 const togglingAttributes = ref<Set<number>>(new Set())
 const loadingAttributes = ref(false)
+const isTogglingStatus = ref(false)
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const isUploadingImage = ref(false)
@@ -237,20 +243,26 @@ const toggleAttribute = async (attribute: Attribute, isChecked: boolean) => {
     }
 }
 
-const deactivateSubcategory = async () => {
+const toggleSubcategoryStatus = async () => {
     if (!props.subcategory) return
 
+    isTogglingStatus.value = true
     try {
-        const res: any = await api.fetchDelete(`/subcategories/${props.subcategory.id}`)
+        const res: any = await api.fetchPost(`/subcategories/${props.subcategory.id}`, {
+            is_active: !props.subcategory.is_active,
+            _method: 'PUT'
+        })
         if (res && res.success) {
-            toast.success(res.message || 'Subcategory deactivated successfully')
-            emit('update:open', false)
+            toast.success(res.message || `Subcategory ${props.subcategory.is_active ? 'deactivated' : 'activated'} successfully`)
+            emit('updated')
         } else {
-            throw new Error(res?.message || 'Failed to deactivate subcategory')
+            throw new Error(res?.message || 'Failed to update subcategory status')
         }
     } catch (err) {
-        console.error('Failed to deactivate subcategory', err)
-        toast.error('Failed to deactivate subcategory')
+        console.error('Failed to toggle subcategory status', err)
+        toast.error('Failed to update status')
+    } finally {
+        isTogglingStatus.value = false
     }
 }
 
