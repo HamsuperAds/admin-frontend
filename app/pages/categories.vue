@@ -133,7 +133,9 @@
                                             <img :src="sub.image" :alt="sub.name" class="w-full h-full object-cover">
                                         </div>
                                     </TableCell>
-                                    <TableCell class="font-medium text-gray-900">{{ sub.name }}</TableCell>
+                                    <TableCell
+                                        class="font-medium text-gray-900 cursor-pointer text-blue-600 hover:underline"
+                                        @click="openSubcategorySheet(sub)">{{ sub.name }}</TableCell>
                                     <TableCell class="text-gray-500">{{ sub.category?.name }}</TableCell>
                                     <TableCell>{{ sub.adsCount }}</TableCell>
                                     <TableCell>
@@ -165,6 +167,8 @@
                 </Card>
             </TabsContent>
         </Tabs>
+
+        <SubcategoryDetailsSheet v-model:open="isSubcategorySheetOpen" :subcategory="selectedSubcategory" />
     </div>
 </template>
 
@@ -186,6 +190,7 @@ import {
     TabsList,
     TabsTrigger,
 } from '@/components/ui/tabs'
+import SubcategoryDetailsSheet from '@/components/SubcategoryDetailsSheet.vue'
 import type { Category, Subcategory } from '@/types'
 
 definePageMeta({
@@ -200,6 +205,13 @@ const subcategories = ref<Subcategory[]>([])
 const loadingCategories = ref(false)
 const loadingSubcategories = ref(false)
 const selectedCategory = ref<Category | null>(null)
+const isSubcategorySheetOpen = ref(false)
+const selectedSubcategory = ref<Subcategory | null>(null)
+
+const openSubcategorySheet = (sub: Subcategory) => {
+    selectedSubcategory.value = sub
+    isSubcategorySheetOpen.value = true
+}
 
 const fetchCategories = async () => {
     loadingCategories.value = true
