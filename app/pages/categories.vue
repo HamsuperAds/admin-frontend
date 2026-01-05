@@ -237,7 +237,15 @@ const fetchSubcategories = async () => {
     try {
         const response: any = await api.fetchGet(url)
         if (response && response.success) {
-            subcategories.value = response.data
+            let data = response.data
+            if (selectedCategory.value) {
+                // If we're filtering by category, the API might not return the full category object inside subcategory
+                data = data.map((sub: Subcategory) => ({
+                    ...sub,
+                    category: sub.category || selectedCategory.value
+                }))
+            }
+            subcategories.value = data
         }
     } catch (err) {
         console.error('Failed to fetch subcategories', err)

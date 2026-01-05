@@ -43,6 +43,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- Attributes -->
             </div>
         </SheetContent>
     </Sheet>
