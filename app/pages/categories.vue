@@ -70,6 +70,9 @@
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
+                                                <DropdownMenuItem @click="openCategorySheet(category)">
+                                                    Edit
+                                                </DropdownMenuItem>
                                                 <DropdownMenuItem v-if="!category.is_active"
                                                     @click="toggleCategoryStatus(category)">Activate</DropdownMenuItem>
                                                 <DropdownMenuItem v-else @click="toggleCategoryStatus(category)">
@@ -170,6 +173,9 @@
 
         <SubcategoryDetailsSheet @updated="fetchSubcategories" v-model:open="isSubcategorySheetOpen"
             :subcategory="selectedSubcategory" />
+
+        <CategoryDetailsSheet @updated="fetchCategories" v-model:open="isCategorySheetOpen"
+            :category="selectedCategorySheet" />
     </div>
 </template>
 
@@ -192,6 +198,7 @@ import {
     TabsTrigger,
 } from '@/components/ui/tabs'
 import SubcategoryDetailsSheet from '@/components/SubcategoryDetailsSheet.vue'
+import CategoryDetailsSheet from '@/components/CategoryDetailsSheet.vue'
 import type { Category, Subcategory } from '@/types'
 
 definePageMeta({
@@ -208,6 +215,13 @@ const loadingSubcategories = ref(false)
 const selectedCategory = ref<Category | null>(null)
 const isSubcategorySheetOpen = ref(false)
 const selectedSubcategory = ref<Subcategory | null>(null)
+const isCategorySheetOpen = ref(false)
+const selectedCategorySheet = ref<Category | null>(null)
+
+const openCategorySheet = (cat: Category) => {
+    selectedCategorySheet.value = cat
+    isCategorySheetOpen.value = true
+}
 
 const openSubcategorySheet = (sub: Subcategory) => {
     selectedSubcategory.value = sub
