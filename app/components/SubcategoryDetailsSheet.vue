@@ -52,7 +52,10 @@
                         <div v-for="attr in categoryAttributes" :key="attr.id"
                             class="flex items-center justify-between p-2 rounded-md hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
                             <div class="flex items-center gap-3">
-                                <Checkbox :id="`attr-${attr.id}`" v-model="checkedMap[attr.id]"
+                                <Icon v-if="togglingAttributes.has(attr.id)" name="lucide:loader-2"
+                                    class="w-4 h-4 animate-spin text-blue-500" />
+                                <Checkbox v-else :id="`attr-${attr.id}`" v-slot="slotProps"
+                                    v-model="checkedMap[attr.id]"
                                     @update:model-value="(val) => toggleAttribute(attr, !!val)" />
                                 <label :for="`attr-${attr.id}`" class="text-sm font-medium leading-none cursor-pointer">
                                     {{ attr.name }} <span class="text-xs text-gray-400 font-normal">({{ attr.type
@@ -93,6 +96,7 @@ const api = useApi()
 
 const categoryAttributes = ref<Attribute[]>([])
 const checkedMap = reactive<Record<number, boolean>>({})
+const togglingAttributes = ref<Set<number>>(new Set())
 const loadingAttributes = ref(false)
 
 const fetchAttributes = async () => {
@@ -130,11 +134,13 @@ const fetchAttributes = async () => {
 }
 
 const toggleAttribute = async (attribute: Attribute, isChecked: boolean) => {
-    console.log('about to toggle attribute', attribute, isChecked);
     if (!props.subcategory) return
 
     const attributeId = Number(attribute.id)
     const subcategoryId = props.subcategory.id
+
+    // Set loading state
+    togglingAttributes.value.add(attributeId)
 
     // Optimistic update of UI state
     checkedMap[attributeId] = isChecked
@@ -158,6 +164,8 @@ const toggleAttribute = async (attribute: Attribute, isChecked: boolean) => {
         toast.error('Failed to update assignment')
         // Revert UI state on error
         checkedMap[attributeId] = !isChecked
+    } finally {
+        togglingAttributes.value.delete(attributeId)
     }
 }
 
