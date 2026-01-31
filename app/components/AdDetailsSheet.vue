@@ -149,12 +149,41 @@
                         <span class="text-xs font-mono font-medium text-gray-900">{{ ad.id }}</span>
                     </div>
                 </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-4 border-t border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-900 mb-3">Actions</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <Button :disabled="ad.status === 'active' || updating" @click="handleStatusUpdate('active')"
+                            variant="outline" size="sm" class="flex-1">
+                            <Icon v-if="updating && targetStatus === 'active'" name="lucide:loader-2"
+                                class="w-4 h-4 mr-2 animate-spin" />
+                            <Icon v-else name="lucide:check-circle" class="w-4 h-4 mr-2" />
+                            Approve
+                        </Button>
+                        <Button :disabled="ad.status === 'sold' || updating" @click="handleStatusUpdate('sold')"
+                            variant="outline" size="sm" class="flex-1">
+                            <Icon v-if="updating && targetStatus === 'sold'" name="lucide:loader-2"
+                                class="w-4 h-4 mr-2 animate-spin" />
+                            <Icon v-else name="lucide:shopping-bag" class="w-4 h-4 mr-2" />
+                            Mark as Sold
+                        </Button>
+                        <Button :disabled="ad.status === 'suspended' || updating"
+                            @click="handleStatusUpdate('suspended')" variant="outline" size="sm" class="flex-1">
+                            <Icon v-if="updating && targetStatus === 'suspended'" name="lucide:loader-2"
+                                class="w-4 h-4 mr-2 animate-spin" />
+                            <Icon v-else name="lucide:ban" class="w-4 h-4 mr-2" />
+                            Suspend
+                        </Button>
+                    </div>
+                </div>
             </div>
         </SheetContent>
     </Sheet>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
     Sheet,
     SheetContent,
@@ -162,14 +191,50 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { toast } from 'vue-sonner'
 import type { Ad } from '@/types/ad'
 
-defineProps<{
+const props = defineProps<{
     open: boolean
     ad: Ad | null
 }>()
 
-defineEmits(['update:open'])
+const emit = defineEmits(['update:open', 'updated'])
+
+const api = useApi()
+const updating = ref(false)
+const targetStatus = ref<'active' | 'sold' | 'suspended' | null>(null)
+
+const handleStatusUpdate = async (status: 'active' | 'sold' | 'suspended') => {
+    if (!props.ad) return
+
+    updating.value = true
+    targetStatus.value = status
+
+    try {
+        const response = await api.fetchPost(`/ads/${props.ad.id}/status`, {
+            status,
+            _method: 'PUT'
+        })
+
+        if (response) {
+            const statusLabels = {
+                active: 'approved',
+                sold: 'marked as sold',
+                suspended: 'suspended'
+            }
+            toast.success(`Ad ${statusLabels[status]} successfully`)
+            emit('updated')
+            emit('update:open', false)
+        }
+    } catch (error: any) {
+        toast.error(error?.data?.message || 'Failed to update ad status')
+    } finally {
+        updating.value = false
+        targetStatus.value = null
+    }
+}
 
 const getStatusClass = (status: string) => {
     switch (status) {

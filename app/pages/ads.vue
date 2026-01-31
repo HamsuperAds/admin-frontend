@@ -131,7 +131,7 @@
             </Pagination>
         </div>
 
-        <AdDetailsSheet v-model:open="isSheetOpen" :ad="selectedAd" />
+        <AdDetailsSheet v-model:open="isSheetOpen" :ad="selectedAd" @updated="fetchAds(currentPage)" />
     </div>
 </template>
 
