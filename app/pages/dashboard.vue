@@ -12,7 +12,11 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Total Users</p>
-                            <p class="text-3xl font-bold text-gray-900">2,345</p>
+                            <div v-if="loading" class="flex items-center h-9">
+                                <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+                            </div>
+                            <p v-else class="text-3xl font-bold text-gray-900">{{
+                                dashboardData?.total_users?.toLocaleString() || '0' }}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -26,7 +30,11 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Total Ads</p>
-                            <p class="text-3xl font-bold text-gray-900">2,345</p>
+                            <div v-if="loading" class="flex items-center h-9">
+                                <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+                            </div>
+                            <p v-else class="text-3xl font-bold text-gray-900">{{
+                                dashboardData?.total_ads?.toLocaleString() || '0' }}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -40,7 +48,11 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Total Transactions</p>
-                            <p class="text-3xl font-bold text-gray-900">N134k</p>
+                            <div v-if="loading" class="flex items-center h-9">
+                                <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+                            </div>
+                            <p v-else class="text-3xl font-bold text-gray-900">₦{{
+                                Number(dashboardData?.total_transaction_sum || 0).toLocaleString() }}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -54,7 +66,11 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Total Ad Views</p>
-                            <p class="text-3xl font-bold text-gray-900">11,345k</p>
+                            <div v-if="loading" class="flex items-center h-9">
+                                <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+                            </div>
+                            <p v-else class="text-3xl font-bold text-gray-900">{{ Number(dashboardData?.total_ad_views
+                                || 0).toLocaleString() }}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -72,12 +88,18 @@
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">
-                    <div v-for="user in latestUsers" :key="user.email" class="flex items-center justify-between">
+                    <div v-if="loading" class="flex items-center justify-center py-8">
+                        <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+                    </div>
+                    <div v-else-if="latestUsers.length === 0" class="text-center py-8 text-gray-500 text-sm">
+                        No users yet
+                    </div>
+                    <div v-else v-for="user in latestUsers" :key="user.email" class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <Avatar class="w-10 h-10">
                                 <AvatarImage :src="user.avatar" :alt="user.name" />
                                 <AvatarFallback class="bg-gray-300 text-gray-700 text-sm">{{ user.initials
-                                }}</AvatarFallback>
+                                    }}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
@@ -101,7 +123,13 @@
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">
-                    <div v-for="transaction in latestTransactions" :key="transaction.id"
+                    <div v-if="loading" class="flex items-center justify-center py-8">
+                        <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+                    </div>
+                    <div v-else-if="latestTransactions.length === 0" class="text-center py-8 text-gray-500 text-sm">
+                        No transactions yet
+                    </div>
+                    <div v-else v-for="transaction in latestTransactions" :key="transaction.id"
                         class="flex items-start justify-between">
                         <div class="flex-1">
                             <p class="text-base font-bold text-gray-900 mb-1">{{ transaction.amount }}</p>
@@ -118,21 +146,27 @@
                 </CardContent>
             </Card>
 
-            <!-- Latest Ads -->
+            <!-- Latest Feedback -->
             <Card>
                 <CardHeader class="pb-3">
                     <div class="flex items-center justify-between">
-                        <CardTitle class="text-base font-semibold">Latest Ads</CardTitle>
+                        <CardTitle class="text-base font-semibold">Latest Feedback</CardTitle>
                         <button class="text-xs text-blue-600 hover:underline">view all</button>
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">
-                    <div v-for="ad in latestAds" :key="ad.email" class="flex items-center justify-between">
+                    <div v-if="loading" class="flex items-center justify-center py-8">
+                        <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin" />
+                    </div>
+                    <div v-else-if="latestFeedback.length === 0" class="text-center py-8 text-gray-500 text-sm">
+                        No feedback yet
+                    </div>
+                    <div v-else v-for="ad in latestFeedback" :key="ad.email" class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <Avatar class="w-10 h-10">
                                 <AvatarImage :src="ad.avatar" :alt="ad.name" />
                                 <AvatarFallback class="bg-gray-300 text-gray-700 text-sm">{{ ad.initials
-                                }}</AvatarFallback>
+                                    }}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">{{ ad.name }}</p>
@@ -169,7 +203,17 @@
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="ad in recentAds" :key="ad.id">
+                        <TableRow v-if="loading">
+                            <TableCell colspan="6" class="text-center py-8">
+                                <Icon name="lucide:loader-2" class="w-6 h-6 text-gray-400 animate-spin mx-auto" />
+                            </TableCell>
+                        </TableRow>
+                        <TableRow v-else-if="recentAds.length === 0">
+                            <TableCell colspan="6" class="text-center py-8 text-gray-500 text-sm">
+                                No ads yet
+                            </TableCell>
+                        </TableRow>
+                        <TableRow v-else v-for="ad in recentAds" :key="ad.id">
                             <TableCell class="font-medium">{{ ad.id }}</TableCell>
                             <TableCell>
                                 <div class="flex items-center gap-3">
@@ -195,105 +239,134 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 
 definePageMeta({
     layout: 'dashboard'
 })
 
-const latestUsers = [
-    { name: 'Mark Lura', email: 'mlura@gmail.com', joined: '1hr ago', avatar: '', initials: 'ML' },
-    { name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT' },
-    { name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT' },
-    { name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT' }
-]
+const api = useApi()
 
-const latestTransactions = [
-    {
-        id: 1,
-        amount: '₦7,500',
-        product: 'Tecno Camnon 20',
-        boostedBy: 'boosted to bronze by Dina Gap!',
-        status: 'successful',
-        statusVariant: 'default'
-    },
-    {
-        id: 2,
-        amount: '₦15,500',
-        product: 'Hero Electric Bike x40',
-        boostedBy: 'boosted to silver by John Gap!',
-        status: 'pending',
-        statusVariant: 'secondary'
-    },
-    {
-        id: 3,
-        amount: '₦7,500',
-        product: 'Tecno Camnon 20',
-        boostedBy: 'boosted to bronze by Dina Gap!',
-        status: 'failed',
-        statusVariant: 'destructive'
-    },
-    {
-        id: 4,
-        amount: '₦7,500',
-        product: 'Tecno Camnon 20',
-        boostedBy: 'boosted to bronze by Dina Gap!',
-        status: 'successful',
-        statusVariant: 'default'
+const dashboardData = ref<any>(null)
+const loading = ref(false)
+
+const fetchDashboardData = async () => {
+    loading.value = true
+    try {
+        const response = await api.fetchGet('/dashboard')
+        if (response) {
+            dashboardData.value = (response as any).data
+        }
+    } catch (err) {
+        console.error('Failed to fetch dashboard data:', err)
+    } finally {
+        loading.value = false
     }
-]
+}
 
-const latestAds = [
-    { name: 'Mark Lura', email: 'mlura@gmail.com', joined: '1hr ago', avatar: '', initials: 'ML' },
-    { name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT' },
-    { name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT' },
-    { name: 'Gina Tui', email: 'gina@gmail.com', joined: '2days ago', avatar: '', initials: 'GT' }
-]
+const latestUsers = computed(() => {
+    if (!dashboardData.value?.latest_users) return []
+    return dashboardData.value.latest_users.map((user: any) => ({
+        name: `${user.first_name} ${user.last_name}`,
+        email: user.email,
+        joined: formatRelativeTime(user.created_at),
+        avatar: '',
+        initials: `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`
+    }))
+})
 
-const recentAds = [
-    {
-        id: 1,
-        title: 'HP Elitebook G8 16gb RAM 254GB SSD',
-        price: '₦7,500',
-        image: 'https://placehold.co/40x40',
-        type: 'Bronze',
-        status: 'Available',
-        statusVariant: 'default',
-        created: '23/04/2025',
-        createdBy: 'Kal Ginn'
-    },
-    {
-        id: 2,
-        title: 'Qlinq Motorcycle 2024 Black',
-        price: '₦7,500',
-        image: 'https://placehold.co/40x40',
-        type: 'Silver',
-        status: 'Available',
-        statusVariant: 'default',
-        created: '23/04/2025',
-        createdBy: 'Kal Ginn'
-    },
-    {
-        id: 3,
-        title: 'Samsung Galaxy S25 4gb RAM',
-        price: '₦7,500',
-        image: 'https://placehold.co/40x40',
-        type: 'Gold',
-        status: 'Available',
-        statusVariant: 'default',
-        created: '23/04/2025',
-        createdBy: 'Kal Ginn'
-    },
-    {
-        id: 4,
-        title: 'HP Elitebook G8 16gb RAM 254GB SSD',
-        price: '₦7,500',
-        image: 'https://placehold.co/40x40',
-        type: 'Bronze',
-        status: 'Unavailable',
-        statusVariant: 'secondary',
-        created: '23/04/2025',
-        createdBy: 'Kal Ginn'
+const latestTransactions = computed(() => {
+    if (!dashboardData.value?.latest_transactions) return []
+    return dashboardData.value.latest_transactions.map((transaction: any) => ({
+        id: transaction.id,
+        amount: `₦${Number(transaction.amount).toLocaleString()}`,
+        product: transaction.ad_title,
+        boostedBy: `boosted to ${transaction.promotion_plan} by ${transaction.user_name}`,
+        status: transaction.status,
+        statusVariant: getTransactionStatusVariant(transaction.status)
+    }))
+})
+
+const latestFeedback = computed(() => {
+    if (!dashboardData.value?.latest_feedback) return []
+    return dashboardData.value.latest_feedback.map((feedback: any) => ({
+        name: feedback.from_user.name,
+        email: feedback.message.substring(0, 50) + (feedback.message.length > 50 ? '...' : ''),
+        joined: formatRelativeTime(feedback.created_at),
+        avatar: feedback.from_user.avatar,
+        initials: feedback.from_user.name.split(' ').map((n: string) => n.charAt(0)).join('')
+    }))
+})
+
+const recentAds = computed(() => {
+    if (!dashboardData.value?.latest_ads) return []
+    return dashboardData.value.latest_ads.map((ad: any, index: number) => ({
+        id: index + 1,
+        title: ad.title,
+        price: `₦${Number(ad.price).toLocaleString()}`,
+        image: ad.primary_image || 'https://placehold.co/40x40',
+        type: ad.promotion_plan || 'Standard',
+        status: ad.status,
+        statusVariant: getAdStatusVariant(ad.status),
+        created: formatDate(ad.created_at),
+        createdBy: ad.user_name
+    }))
+})
+
+const getTransactionStatusVariant = (status: string) => {
+    switch (status) {
+        case 'successful':
+            return 'default'
+        case 'pending':
+            return 'secondary'
+        case 'failed':
+            return 'destructive'
+        default:
+            return 'outline'
     }
-]
+}
+
+const getAdStatusVariant = (status: string) => {
+    switch (status) {
+        case 'active':
+            return 'default'
+        case 'pending':
+            return 'secondary'
+        case 'sold':
+            return 'outline'
+        case 'suspended':
+            return 'destructive'
+        default:
+            return 'outline'
+    }
+}
+
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMs = now.getTime() - date.getTime()
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+
+    if (diffInMinutes < 60) {
+        return `${diffInMinutes}min ago`
+    } else if (diffInHours < 24) {
+        return `${diffInHours}hr ago`
+    } else if (diffInDays === 1) {
+        return '1 day ago'
+    } else {
+        return `${diffInDays} days ago`
+    }
+}
+
+onMounted(() => {
+    fetchDashboardData()
+})
 </script>
