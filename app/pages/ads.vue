@@ -101,7 +101,7 @@
                             <TableCell>{{ new Date(ad.created_at).toLocaleDateString() }}</TableCell>
                             <TableCell>{{ ad.user?.first_name }} {{ ad.user?.last_name }}</TableCell>
                             <TableCell>
-                                <AdActions />
+                                <AdActions :ad="ad" @updated="fetchAds(currentPage)" />
                             </TableCell>
                         </TableRow>
                     </TableBody>
