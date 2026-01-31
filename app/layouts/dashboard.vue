@@ -61,13 +61,13 @@
 
 <script setup lang="ts">
 import 'vue-sonner/style.css'
-import { Toaster } from '@/components/ui/sonner'
 
 const links = [
     { name: 'Dashboard', to: '/dashboard', icon: 'lucide:layout-dashboard' },
     { name: 'Users', to: '/users', icon: 'lucide:users' },
     { name: 'Ads', to: '/ads', icon: 'lucide:megaphone' },
     { name: 'Transactions', to: '/transactions', icon: 'lucide:credit-card' },
+    { name: 'Verification Requests', to: '/verification-request', icon: 'lucide:user-check' },
     { name: 'Categories', to: '/categories', icon: 'lucide:list-tree' },
     { name: 'Admins', to: '/admins', icon: 'lucide:shield-check' },
     { name: 'Faq', to: '/faqs', icon: 'lucide:help-circle' },

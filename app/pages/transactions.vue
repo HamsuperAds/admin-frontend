@@ -4,7 +4,23 @@
 
         <!-- Transaction stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            <Card v-for="stat in transactionStats" :key="stat.name">
+            <!-- Loading State -->
+            <Card v-if="statsPending" v-for="n in 5" :key="n">
+                <CardContent class="p-6">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 bg-gray-100 rounded animate-pulse">
+                            <div class="w-5 h-5 bg-gray-300 rounded"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse"></div>
+                            <div class="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Actual Stats -->
+            <Card v-else v-for="stat in transactionStats" :key="stat.name">
                 <CardContent class="p-6">
                     <div class="flex items-start gap-3">
                         <div class="p-2 bg-blue-100 rounded">
@@ -80,24 +96,41 @@
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="transaction in transactions" :key="transaction.id">
-                            <TableCell class="font-medium">{{ transaction.id }}</TableCell>
+                        <TableRow v-if="pending">
+                            <TableCell colspan="8" class="text-center py-8 text-gray-500">
+                                Loading transactions...
+                            </TableCell>
+                        </TableRow>
+                        <TableRow v-else-if="error">
+                            <TableCell colspan="8" class="text-center py-8 text-red-500">
+                                Error loading transactions. Please try again.
+                            </TableCell>
+                        </TableRow>
+                        <TableRow v-else-if="transactions.length === 0">
+                            <TableCell colspan="8" class="text-center py-8 text-gray-500">
+                                No transactions found.
+                            </TableCell>
+                        </TableRow>
+                        <TableRow v-else v-for="(transaction, index) in transactions" :key="transaction.id">
+                            <TableCell class="font-medium">{{ index + 1 }}</TableCell>
                             <TableCell class="cursor-pointer hover:bg-gray-50"
                                 @click="openTransactionSheet(transaction)">
-                                <span class="text-sm font-medium text-blue-600">#{{ transaction.id }}</span>
+                                <span class="text-sm font-medium text-blue-600">#{{ transaction.reference }}</span>
                             </TableCell>
                             <TableCell>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ transaction.product }}</p>
-                                    <p class="text-xs text-gray-500">{{ transaction.boostedBy }}</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ transaction.ad?.title || 'N/A' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">boosted to {{ transaction.promotion_plan?.name ||
+                                        'N/A' }}</p>
                                 </div>
                             </TableCell>
-                            <TableCell class="font-semibold">{{ transaction.amount }}</TableCell>
-                            <TableCell>{{ transaction.user }}</TableCell>
+                            <TableCell class="font-semibold">{{ formatAmount(transaction.amount) }}</TableCell>
+                            <TableCell>{{ getUserName(transaction) }}</TableCell>
                             <TableCell>
-                                <Badge :variant="transaction.statusVariant">{{ transaction.status }}</Badge>
+                                <Badge :variant="getStatusVariant(transaction.status)">{{ transaction.status }}</Badge>
                             </TableCell>
-                            <TableCell>{{ transaction.date }}</TableCell>
+                            <TableCell>{{ formatDate(transaction.created_at) }}</TableCell>
                             <TableCell>
                                 <TransactionActions />
                             </TableCell>
@@ -113,7 +146,7 @@
 
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -125,81 +158,109 @@ import {
 } from '@/components/ui/dropdown-menu'
 import TransactionActions from '@/components/TransactionActions.vue'
 import TransactionDetailsSheet from '@/components/TransactionDetailsSheet.vue'
+import type { Transaction, TransactionsApiResponse, TransactionStatsResponse } from '@/types/transaction'
 
 definePageMeta({
     layout: 'dashboard'
 })
+
+const { get } = useApi()
 
 const selectedFilter = ref('All transactions')
 const searchCriteria = ref('Transaction ID')
 const searchQuery = ref('')
 
 const isSheetOpen = ref(false)
-const selectedTransaction = ref(null)
+const selectedTransaction = ref<Transaction | null>(null)
 
-const openTransactionSheet = (transaction: any) => {
+// Fetch transactions from API
+const { data: transactionsData, pending, error, refresh } = await get<TransactionsApiResponse>('/transactions')
+
+// Fetch transaction stats from API
+const { data: statsData, pending: statsPending } = await get<TransactionStatsResponse>('/transactions/stats')
+
+const openTransactionSheet = (transaction: Transaction) => {
     selectedTransaction.value = transaction
     isSheetOpen.value = true
 }
 
-const transactionStats = [
-    { name: 'Total Transactions', value: '8,456', icon: 'lucide:credit-card' },
-    { name: 'Successful', value: '7,200', icon: 'lucide:check-circle' },
-    { name: 'Pending', value: '856', icon: 'lucide:clock' },
-    { name: 'Failed', value: '300', icon: 'lucide:x-circle' },
-    { name: 'Refunded', value: '100', icon: 'lucide:rotate-ccw' }
-];
-
-const transactions = [
-    {
-        id: 1,
-        amount: '₦7,500',
-        product: 'Tecno Camnon 20',
-        boostedBy: 'boosted to bronze',
-        user: 'Dina Gap',
-        status: 'successful',
-        statusVariant: 'default' as const,
-        date: '23/04/2025'
-    },
-    {
-        id: 2,
-        amount: '₦15,500',
-        product: 'Hero Electric Bike x40',
-        boostedBy: 'boosted to silver',
-        user: 'John Gap',
-        status: 'pending',
-        statusVariant: 'secondary' as const,
-        date: '23/04/2025'
-    },
-    {
-        id: 3,
-        amount: '₦7,500',
-        product: 'Tecno Camnon 20',
-        boostedBy: 'boosted to bronze',
-        user: 'Dina Gap',
-        status: 'failed',
-        statusVariant: 'destructive' as const,
-        date: '22/04/2025'
-    },
-    {
-        id: 4,
-        amount: '₦25,000',
-        product: 'Samsung Galaxy S25',
-        boostedBy: 'boosted to gold',
-        user: 'Jane Smith',
-        status: 'successful',
-        statusVariant: 'default' as const,
-        date: '22/04/2025'
-    },
-    {
-        id: 5,
-        amount: '₦10,000',
-        product: 'HP Laptop',
-        boostedBy: 'boosted to silver',
-        user: 'Mike Johnson',
-        status: 'pending',
-        statusVariant: 'secondary' as const,
-        date: '21/04/2025'
+// Helper function to get status variant for Badge component
+const getStatusVariant = (status: string) => {
+    switch (status) {
+        case 'successful':
+            return 'default'
+        case 'pending':
+            return 'secondary'
+        case 'failed':
+        case 'refunded':
+            return 'destructive'
+        default:
+            return 'default'
     }
-]
+}
+
+// Helper function to format amount
+const formatAmount = (amount: string) => {
+    return `₦${parseFloat(amount).toLocaleString()}`
+}
+
+// Helper function to format date
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+// Helper function to get user full name
+const getUserName = (transaction: Transaction) => {
+    if (!transaction.user) return 'N/A'
+    return `${transaction.user.first_name} ${transaction.user.last_name}`
+}
+
+// Compute transaction stats from API data
+const transactionStats = computed(() => {
+    if (!statsData.value?.data) {
+        return [
+            { name: 'Total Transactions', value: '0', icon: 'lucide:credit-card' },
+            { name: 'Successful', value: '0', icon: 'lucide:check-circle' },
+            { name: 'Pending', value: '0', icon: 'lucide:clock' },
+            { name: 'Failed', value: '0', icon: 'lucide:x-circle' },
+            { name: 'Total Revenue', value: '₦0', icon: 'lucide:banknote' }
+        ]
+    }
+
+    const stats = statsData.value.data
+
+    return [
+        {
+            name: 'Total Transactions',
+            value: stats.total_transactions.toLocaleString(),
+            icon: 'lucide:credit-card'
+        },
+        {
+            name: 'Successful',
+            value: stats.successful_transactions.toLocaleString(),
+            icon: 'lucide:check-circle'
+        },
+        {
+            name: 'Pending',
+            value: stats.pending_transactions.toLocaleString(),
+            icon: 'lucide:clock'
+        },
+        {
+            name: 'Failed',
+            value: stats.failed_transactions.toLocaleString(),
+            icon: 'lucide:x-circle'
+        },
+        {
+            name: 'Total Revenue',
+            value: formatAmount(stats.total_revenue),
+            icon: 'lucide:banknote'
+        }
+    ]
+})
+
+// Get transactions array from API response
+const transactions = computed(() => {
+    return transactionsData.value?.data?.data || []
+})
 </script>
