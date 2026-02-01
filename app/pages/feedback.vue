@@ -54,8 +54,11 @@
                                 No feedback found
                             </TableCell>
                         </TableRow>
-                        <TableRow v-else v-for="(feedback, index) in feedbacks" :key="feedback.id">
-                            <TableCell class="font-medium">{{ (currentPage - 1) * pagination.perPage + index + 1 }}
+                        <TableRow v-else v-for="(feedback, index) in feedbacks" :key="feedback.id"
+                            :class="{ 'opacity-60': feedback.status === 'hidden' }">
+                            <TableCell class="font-medium"
+                                :class="{ 'bg-gradient-to-r from-red-100 to-transparent': feedback.status === 'hidden' }">
+                                {{ (currentPage - 1) * pagination.perPage + index + 1 }}
                             </TableCell>
                             <TableCell>
                                 <div class="flex items-center gap-2">
@@ -65,7 +68,7 @@
                                         <span class="text-sm font-medium">{{ feedback.from_user?.first_name }} {{
                                             feedback.from_user?.last_name }}</span>
                                         <span class="text-xs text-muted-foreground">{{ feedback.from_user?.email
-                                            }}</span>
+                                        }}</span>
                                     </div>
                                 </div>
                             </TableCell>
@@ -99,7 +102,7 @@
                                     </div>
                                     <div class="flex items-center gap-1" title="Offensive">
                                         <Icon name="lucide:flag" class="w-3 h-3 text-red-400" /> {{
-                                        feedback.offensive_count }}
+                                            feedback.offensive_count }}
                                     </div>
                                 </div>
                             </TableCell>
@@ -118,9 +121,10 @@
                                             <Icon name="lucide:trash" class="mr-2 h-4 w-4" />
                                             Delete feedback
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem @click="hideFeedback(feedback.id)">
-                                            <Icon name="lucide:eye-off" class="mr-2 h-4 w-4" />
-                                            Hide feedback
+                                        <DropdownMenuItem @click="hideFeedback(feedback)">
+                                            <Icon :name="feedback.status === 'hidden' ? 'lucide:eye' : 'lucide:eye-off'"
+                                                class="mr-2 h-4 w-4" />
+                                            {{ feedback.status === 'hidden' ? 'Show feedback' : 'Hide feedback' }}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -250,32 +254,32 @@ const fetchFeedbacks = async (page = 1) => {
 const deleteFeedback = async (id: string) => {
     if (!confirm('Are you sure you want to delete this feedback?')) return
 
+    const loadingToast = toast.loading('Deleting feedback...')
     try {
-        // Assuming DELETE /user-feedbacks/:id
         await api.fetchDelete(`/user-feedbacks/${id}`)
-        toast.success('Feedback deleted successfully')
+        toast.success('Feedback deleted successfully', { id: loadingToast })
         fetchFeedbacks(currentPage.value)
         fetchStats()
     } catch (err) {
         console.error('Failed to delete feedback:', err)
-        toast.error('Failed to delete feedback')
+        toast.error('Failed to delete feedback', { id: loadingToast })
     }
 }
 
-const hideFeedback = async (id: string) => {
-    try {
-        // Assuming PATCH /user-feedbacks/:id/hide or just update status
-        // I will guess standard update pattern or specific endpoint. 
-        // Given I don't have the specific endpoint, I'll assume an update to status.
-        // Or maybe there is no endpoint? I will try a generic patch for now or maybe just a GET to show intent if I can't confirm.
-        // Actually best guess is PATCH /user-feedbacks/{id} with {status: 'hidden'}
+const hideFeedback = async (feedback: Feedback) => {
+    const newStatus = feedback.status === 'hidden' ? 'visible' : 'hidden'
+    const loadingToast = toast.loading(`Updating feedback status to ${newStatus}...`)
 
-        await api.fetchPatch(`/user-feedbacks/${id}`, { status: 'hidden' })
-        toast.success('Feedback hidden successfully')
+    try {
+        await api.fetchPost(`/user-feedbacks/${feedback.id}/status`, {
+            _method: 'PUT',
+            status: newStatus
+        })
+        toast.success(`Feedback ${newStatus === 'hidden' ? 'hidden' : 'visible'} successfully`, { id: loadingToast })
         fetchFeedbacks(currentPage.value)
     } catch (err) {
-        console.error('Failed to hide feedback:', err)
-        toast.error('Failed to hide feedback')
+        console.error('Failed to update feedback status:', err)
+        toast.error('Failed to update feedback status', { id: loadingToast })
     }
 }
 
