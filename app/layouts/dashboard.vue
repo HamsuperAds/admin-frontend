@@ -70,6 +70,7 @@ const links = [
     { name: 'Verification Requests', to: '/verification-request', icon: 'lucide:user-check' },
     { name: 'Categories', to: '/categories', icon: 'lucide:list-tree' },
     { name: 'Admins', to: '/admins', icon: 'lucide:shield-check' },
+    { name: 'Feedback', to: '/feedback', icon: 'lucide:message-square' },
     { name: 'Faq', to: '/faqs', icon: 'lucide:help-circle' },
 ]
 </script>
