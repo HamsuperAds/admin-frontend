@@ -6,10 +6,8 @@
                 HamSuper Admin
             </div>
 
-
             <!-- Right Side Icons -->
             <div class="flex items-center space-x-4">
-
                 <!-- Bell Icon -->
                 <button class="hover:text-blue-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
