@@ -143,8 +143,7 @@
 
                 <div class="flex items-center gap-2 cursor-pointer ml-2">
                     <img :src="$getAdmin()?.avatar" class="w-8 h-8 rounded-lg">
-                    <span class="text-sm font-medium text-gray-700">{{ $getAdmin()?.first_name }} {{
-                        $getAdmin()?.last_name }}</span>
+                    <span class="text-sm font-medium text-gray-700">{{ $getAdmin()?.name }}</span>
                     <Icon name="lucide:chevron-down" class="w-4 h-4 text-gray-600" />
                 </div>
             </header>

@@ -100,7 +100,7 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-900">{{ ad.user.first_name }} {{ ad.user.last_name
-                                }}</p>
+                            }}</p>
                             <p class="text-xs text-gray-600">{{ ad.user.email }}</p>
                             <p v-if="ad.user.phone_number" class="text-xs text-gray-600">{{ ad.user.phone_number }}</p>
                         </div>
