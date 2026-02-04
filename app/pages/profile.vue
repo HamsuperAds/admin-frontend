@@ -61,8 +61,11 @@
                         </div>
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-500">Last Login</span>
-                            <span class="text-gray-900 font-medium">{{ admin.last_login_at ?
-                                $formatDateTime(admin.last_login_at) : 'N/A' }}</span>
+                            <span v-if="admin.last_login_at" class="text-gray-900 font-medium">
+                                {{ $formatDateTime(admin.last_login_at).split('at')[0] }}
+                                <br>at {{ $formatDateTime(admin.last_login_at).split('at')[1] }}
+                            </span>
+                            <span v-else>N/A</span>
                         </div>
                     </div>
                 </CardContent>
@@ -218,7 +221,6 @@ const passwordError = computed(() => {
     if (!passwordData.password) return null
     if (passwordData.password.length < 8) return 'Password must be at least 8 characters'
     if (passwordData.password !== passwordData.password_confirmation) {
-        if (!passwordData.password_confirmation) return null
         return 'Passwords do not match'
     }
     return null
