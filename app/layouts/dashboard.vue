@@ -141,11 +141,40 @@
                     </SheetContent>
                 </Sheet>
 
-                <div class="flex items-center gap-2 cursor-pointer ml-2">
-                    <img :src="$getAdmin()?.avatar" class="w-8 h-8 rounded-lg">
-                    <span class="text-sm font-medium text-gray-700">{{ $getAdmin()?.name }}</span>
-                    <Icon name="lucide:chevron-down" class="w-4 h-4 text-gray-600" />
-                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <div
+                            class="flex items-center gap-2 cursor-pointer ml-2 hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
+                            <img :src="$getAdmin()?.avatar || undefined" class="w-8 h-8 rounded-lg object-cover">
+                            <span class="text-sm font-medium text-gray-700">{{ $getAdmin()?.name }}</span>
+                            <Icon name="lucide:chevron-down" class="w-4 h-4 text-gray-600" />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent class="w-56" align="end" :side-offset="8">
+                        <DropdownMenuLabel class="font-normal flex flex-col gap-1">
+                            <div class="text-sm font-semibold text-gray-900">{{ $getAdmin()?.name }}</div>
+                            <div class="text-xs text-gray-500 truncate">{{ $getAdmin()?.email }}</div>
+                            <div class="flex items-center gap-1 mt-1">
+                                <Badge variant="secondary" class="text-[10px] px-1.5 py-0 h-4 capitalize">
+                                    {{ $getAdmin()?.roles?.[0]?.name || 'Admin' }}
+                                </Badge>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem class="cursor-pointer" @click="navigateTo('/profile')">
+                                <Icon name="lucide:user" class="mr-2 h-4 w-4" />
+                                <span>View profile</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem class="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50"
+                            @click="useLogout()">
+                            <Icon name="lucide:log-out" class="mr-2 h-4 w-4" />
+                            <span>Log out</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </header>
 
             <!-- Page Content -->
@@ -171,6 +200,15 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
