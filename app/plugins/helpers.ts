@@ -34,7 +34,12 @@ export default defineNuxtPlugin((nuxtApp) => {
       },
       getAdmin: (): Admin | null => {
         if (data.value) {
-          return data.value as Admin;
+          // Handle both cases: direct admin object or wrapped in success/data
+          const sessionData = data.value as any;
+          if (sessionData.success && sessionData.data) {
+            return sessionData.data as Admin;
+          }
+          return sessionData as Admin;
         }
         return null;
       },

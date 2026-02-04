@@ -26,7 +26,7 @@
                             title="Active Status" v-if="admin.status === 'active'"></div>
                     </div>
 
-                    <h2 class="text-xl font-bold text-gray-900">{{ admin.first_name }} {{ admin.last_name }}</h2>
+                    <h2 class="text-xl font-bold text-gray-900">{{ fullName }}</h2>
                     <p class="text-sm text-gray-500 mb-4">{{ admin.email }}</p>
 
                     <div class="flex flex-wrap justify-center gap-2 mb-6">
@@ -111,6 +111,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -121,7 +122,15 @@ definePageMeta({
 })
 
 const { $getAdmin, $formatDate, $formatDateTime } = useNuxtApp() as any
-const admin = $getAdmin()
+
+const admin = computed(() => $getAdmin())
+
+const fullName = computed(() => {
+    if (!admin.value) return ''
+    if (admin.value.name) return admin.value.name
+    const parts = [admin.value.first_name, admin.value.middle_name, admin.value.last_name]
+    return parts.filter(Boolean).join(' ')
+})
 
 const getStatusClass = (status: string) => {
     switch (status) {
@@ -133,7 +142,7 @@ const getStatusClass = (status: string) => {
 }
 
 // Inline component for info items
-const InfoItem = {
+/* const InfoItem = {
     props: ['label', 'value'],
     template: `
     <div class="space-y-1">
@@ -141,5 +150,5 @@ const InfoItem = {
       <p class="text-sm font-semibold text-gray-900 truncate">{{ value }}</p>
     </div>
   `
-}
+} */
 </script>

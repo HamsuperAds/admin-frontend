@@ -145,18 +145,18 @@
                     <DropdownMenuTrigger as-child>
                         <div
                             class="flex items-center gap-2 cursor-pointer ml-2 hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
-                            <img :src="$getAdmin()?.avatar || undefined" class="w-8 h-8 rounded-lg object-cover">
-                            <span class="text-sm font-medium text-gray-700">{{ $getAdmin()?.name }}</span>
+                            <img :src="admin?.avatar || undefined" class="w-8 h-8 rounded-lg object-cover">
+                            <span class="text-sm font-medium text-gray-700">{{ fullName }}</span>
                             <Icon name="lucide:chevron-down" class="w-4 h-4 text-gray-600" />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent class="w-56" align="end" :side-offset="8">
                         <DropdownMenuLabel class="font-normal flex flex-col gap-1">
-                            <div class="text-sm font-semibold text-gray-900">{{ $getAdmin()?.name }}</div>
-                            <div class="text-xs text-gray-500 truncate">{{ $getAdmin()?.email }}</div>
+                            <div class="text-sm font-semibold text-gray-900">{{ fullName }}</div>
+                            <div class="text-xs text-gray-500 truncate">{{ admin?.email }}</div>
                             <div class="flex items-center gap-1 mt-1">
                                 <Badge variant="secondary" class="text-[10px] px-1.5 py-0 h-4 capitalize">
-                                    {{ $getAdmin()?.roles?.[0]?.name || 'Admin' }}
+                                    {{ admin?.roles?.[0]?.name || 'Admin' }}
                                 </Badge>
                             </div>
                         </DropdownMenuLabel>
@@ -217,6 +217,7 @@ import 'vue-sonner/style.css'
 import type { AdminNotification, NotificationResponse, UnreadCountResponse, NotificationPagination } from '@/types/notification'
 
 const api = useApi()
+const { $getAdmin } = useNuxtApp() as any
 
 const links = [
     { name: 'Dashboard', to: '/dashboard', icon: 'lucide:layout-dashboard' },
@@ -239,6 +240,15 @@ const loadingNotifications = ref(false)
 const actionLoading = ref<Record<string, 'read' | 'delete' | null>>({})
 const markingAllRead = ref(false)
 const deletingAllRead = ref(false)
+
+const admin = computed(() => $getAdmin())
+
+const fullName = computed(() => {
+    if (!admin.value) return ''
+    if (admin.value.name) return admin.value.name
+    const parts = [admin.value.first_name, admin.value.middle_name, admin.value.last_name]
+    return parts.filter(Boolean).join(' ')
+})
 
 const hasReadNotifications = computed(() => {
     return notifications.value.some(n => n.read_at !== null)
