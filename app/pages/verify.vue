@@ -17,14 +17,14 @@
                     </div>
 
                     <div class="code-inputs">
-                        <input v-for="(digit, index) in verificationCode" :key="index"
-                            :ref="el => codeInputs[index] = el" v-model="verificationCode[index]" type="text"
-                            inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input"
-                            @input="handleInput(index, $event)" @keydown="handleKeydown(index, $event)"
-                            :disabled="isLoading" />
+                        <InputOTP v-model="otpCode" :maxlength="5" :disabled="isLoading">
+                            <InputOTPGroup>
+                                <InputOTPSlot v-for="(_, index) in 5" :key="index" :index="index" />
+                            </InputOTPGroup>
+                        </InputOTP>
                     </div>
 
-                    <button type="submit" class="verify-button" :disabled="!isCodeComplete || isLoading">
+                    <button type="submit" class="verify-button" :disabled="otpCode.length < 5 || isLoading">
                         {{ isLoading ? 'Verifying...' : 'Verify' }}
                     </button>
 
@@ -48,6 +48,11 @@
 
 <script setup lang="ts">
 import { useUserInfoStore } from '~/stores/userInfo'
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp'
 
 definePageMeta({
     auth: {
@@ -62,8 +67,7 @@ const { setToken } = useAuthState();
 const { fetchPost } = useApi()
 const userInfoStore = useUserInfoStore()
 
-const verificationCode = ref(['', '', '', '', ''])
-const codeInputs = ref<HTMLInputElement[]>([])
+const otpCode = ref('')
 const resendTimer = ref(30)
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -92,35 +96,14 @@ const startTimer = () => {
     }, 1000)
 }
 
-const isCodeComplete = computed(() => {
-    return verificationCode.value.every(digit => digit !== '' && /^\d$/.test(digit))
-})
-
-const handleInput = (index: number, event: Event) => {
-    const input = event.target as HTMLInputElement
-    let value = input.value
-
-    // Only allow numbers
-    value = value.replace(/[^0-9]/g, '')
-    verificationCode.value[index] = value
-
-    if (value && index < 4) {
-        codeInputs.value[index + 1]?.focus()
-    }
-}
-
-const handleKeydown = (index: number, event: KeyboardEvent) => {
-    if (event.key === 'Backspace' && !verificationCode.value[index] && index > 0) {
-        codeInputs.value[index - 1]?.focus()
-    }
-}
-
 const handleVerify = async () => {
+    if (otpCode.value.length < 5) return
+
     try {
         isLoading.value = true
         errorMessage.value = ''
 
-        const code = verificationCode.value.join('')
+        const code = otpCode.value
 
         const response = await fetchPost<{
             success: boolean
@@ -146,16 +129,14 @@ const handleVerify = async () => {
             await router.push('/dashboard')
         } else if (!response.success) {
             errorMessage.value = response.message || 'Invalid or expired OTP code'
-            // Clear the code inputs
-            verificationCode.value = ['', '', '', '', '']
-            codeInputs.value[0]?.focus()
+            // Clear the code input
+            otpCode.value = ''
         }
     } catch (error: any) {
         console.error('Verification error:', error)
         errorMessage.value = error?.data?.message || 'An error occurred during verification. Please try again.'
-        // Clear the code inputs
-        verificationCode.value = ['', '', '', '', '']
-        codeInputs.value[0]?.focus()
+        // Clear the code input
+        otpCode.value = ''
     } finally {
         isLoading.value = false
     }
@@ -237,25 +218,8 @@ onUnmounted(() => {
 
 .code-inputs {
     display: flex;
-    gap: 0.75rem;
     justify-content: center;
     margin-bottom: 1.5rem;
-}
-
-.code-input {
-    width: 3rem;
-    height: 3rem;
-    text-align: center;
-    font-size: 1.25rem;
-    font-weight: 500;
-    border: 1px solid #d1d1d1;
-    border-radius: 4px;
-    transition: border-color 0.2s;
-}
-
-.code-input:focus {
-    outline: none;
-    border-color: #3b9dd8;
 }
 
 .verify-button {

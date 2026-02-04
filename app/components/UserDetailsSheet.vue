@@ -56,6 +56,25 @@
                         </div>
                     </template>
                 </div>
+
+                <div v-if="user && !loading" class="pt-6 border-t border-gray-100 flex gap-3">
+                    <Button v-if="user.status !== 'active'" variant="outline"
+                        class="flex-1 h-9 border-green-200 text-green-700 hover:bg-green-50"
+                        @click="$emit('updateStatus', user.id, 'active')" :disabled="isUpdatingStatus">
+                        <Icon v-if="isUpdatingStatus" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                        Make active
+                    </Button>
+                    <Button v-if="user.status !== 'inactive'" variant="outline" class="flex-1 text-gray-700 h-9"
+                        @click="$emit('updateStatus', user.id, 'inactive')" :disabled="isUpdatingStatus">
+                        <Icon v-if="isUpdatingStatus" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                        Make inactive
+                    </Button>
+                    <Button v-if="user.status !== 'suspended'" variant="destructive" class="flex-1 h-9"
+                        @click="$emit('updateStatus', user.id, 'suspended')" :disabled="isUpdatingStatus">
+                        <Icon v-if="isUpdatingStatus" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                        Suspend user
+                    </Button>
+                </div>
             </div>
         </SheetContent>
     </Sheet>
@@ -76,7 +95,11 @@ defineProps<{
     open: boolean
     user: User
     loading?: boolean
+    isUpdatingStatus?: boolean
 }>()
 
-defineEmits(['update:open'])
+const emit = defineEmits<{
+    (e: 'update:open', value: boolean): void
+    (e: 'updateStatus', userId: string | number, status: string): void
+}>()
 </script>

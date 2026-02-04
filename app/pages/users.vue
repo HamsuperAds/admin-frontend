@@ -123,7 +123,8 @@
               </TableCell>
               <TableCell class="text-gray-500">{{ new Date(user.created_at).toLocaleDateString() }}</TableCell>
               <TableCell>
-                <UserActions />
+                <UserActions :user="user" :loading="isUpdatingStatus[user.id]"
+                  @action="(status) => handleStatusUpdate(user.id, status)" />
               </TableCell>
             </TableRow>
           </TableBody>
@@ -153,13 +154,16 @@
       </CardContent>
     </Card>
 
-    <UserDetailsSheet v-if="isSheetOpen" v-model:open="isSheetOpen" :user="selectedUser" :loading="loadingDetails" />
+    <UserDetailsSheet v-if="isSheetOpen" v-model:open="isSheetOpen" :user="selectedUser!" :loading="loadingDetails"
+      :is-updating-status="selectedUser ? isUpdatingStatus[selectedUser.id] : false"
+      @update-status="handleStatusUpdate" />
   </div>
 </template>
 
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import { watchDebounced } from '@vueuse/core'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -199,6 +203,7 @@ const users = ref<User[]>([])
 const loading = ref(false)
 const loadingSearch = ref(false)
 const loadingDetails = ref(false)
+const isUpdatingStatus = ref<Record<string, boolean>>({})
 
 const pagination = ref({
   total: 0,
@@ -336,10 +341,43 @@ const openUserSheet = async (user: User) => {
   }
 }
 
-// Watch for pagination changes - immediate: true handles initial load
 watch(currentPage, (newPage) => {
   fetchUsers(newPage)
 }, { immediate: true })
+
+const handleStatusUpdate = async (userId: string | number, status: string) => {
+  isUpdatingStatus.value[userId] = true
+  try {
+    const formData = new FormData()
+    formData.append('_method', 'PUT')
+    formData.append('status', status)
+
+    const response = await api.fetchPost(`/users/${userId}/status`, formData)
+
+    if (response) {
+      toast.success(`User status updated to ${status} successfully`)
+
+      // Update local state if user is in the list
+      const userIndex = users.value.findIndex(u => u.id === userId)
+      if (userIndex !== -1 && users.value[userIndex]) {
+        users.value[userIndex].status = status as any
+      }
+
+      // Update selected user if applicable
+      if (selectedUser.value && selectedUser.value.id === userId) {
+        selectedUser.value.status = status as any
+      }
+
+      // Refresh stats
+      fetchUserStats()
+    }
+  } catch (err) {
+    console.error('Failed to update user status:', err)
+    toast.error('Failed to update user status')
+  } finally {
+    isUpdatingStatus.value[userId] = false
+  }
+}
 
 // User stats
 const loadingStats = ref(true)

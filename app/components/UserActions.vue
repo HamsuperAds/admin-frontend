@@ -1,29 +1,50 @@
 <template>
-    <div class="relative" ref="target">
-        <button @click="isOpen = !isOpen" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <Icon name="lucide:more-horizontal" class="w-4 h-4 text-gray-500" />
-        </button>
+    <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+            <Button variant="ghost" class="h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors"
+                :disabled="loading">
+                <Icon v-if="loading" name="lucide:loader-2" class="h-4 w-4 animate-spin text-blue-600" />
+                <Icon v-else name="lucide:more-horizontal" class="h-4 w-4 text-gray-500" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" class="w-48">
+            <DropdownMenuItem v-if="user.status !== 'active'" class="cursor-pointer gap-2"
+                @click="$emit('action', 'active')">
+                <Icon name="lucide:user-check" class="w-4 h-4 text-green-600" />
+                <span>Make active</span>
+            </DropdownMenuItem>
 
-        <div v-if="isOpen"
-            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-10 py-1">
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <Icon name="lucide:user-x" class="w-4 h-4" />
-                Suspend user
-            </button>
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <Icon name="lucide:edit-2" class="w-4 h-4" />
-                Edit user
-            </button>
-        </div>
-    </div>
+            <DropdownMenuItem v-if="user.status !== 'inactive'" class="cursor-pointer gap-2"
+                @click="$emit('action', 'inactive')">
+                <Icon name="lucide:user-x" class="w-4 h-4 text-gray-500" />
+                <span>Make inactive</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem v-if="user.status !== 'suspended'"
+                class="cursor-pointer gap-2 text-red-600 focus:text-red-600" @click="$emit('action', 'suspended')">
+                <Icon name="lucide:user-minus" class="w-4 h-4" />
+                <span>Suspend user</span>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+    </DropdownMenu>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import type { User } from '@/types/user'
 
-const isOpen = ref(false)
-const target = ref(null)
+defineProps<{
+    user: User
+    loading?: boolean
+}>()
 
-onClickOutside(target, () => isOpen.value = false)
+defineEmits<{
+    (e: 'action', value: 'active' | 'inactive' | 'suspended'): void
+}>()
 </script>
