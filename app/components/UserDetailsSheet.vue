@@ -4,7 +4,7 @@
             <SheetHeader>
                 <SheetTitle>User Details</SheetTitle>
             </SheetHeader>
-            <div v-if="user" class="py-6 space-y-6">
+            <div v-if="user" class="p-6 space-y-6">
                 <div class="flex flex-col items-center gap-4">
                     <Avatar class="w-20 h-20">
                         <AvatarImage :src="user.avatar || undefined" :alt="user.first_name" />

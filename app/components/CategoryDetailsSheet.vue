@@ -4,7 +4,7 @@
             <SheetHeader>
                 <SheetTitle>Category Details</SheetTitle>
             </SheetHeader>
-            <div v-if="category" class="py-6 space-y-6 h-[calc(100vh-1rem)] overflow-y-auto custom-scroll">
+            <div v-if="category" class="p-6 space-y-6 h-[calc(100vh-1rem)] overflow-y-auto custom-scroll">
                 <div class="flex flex-col items-center gap-4">
                     <div class="relative group" :class="category.is_active ? 'cursor-pointer' : 'cursor-not-allowed'"
                         @click="triggerFileInput">

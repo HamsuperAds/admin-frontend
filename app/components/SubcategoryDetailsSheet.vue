@@ -4,7 +4,7 @@
             <SheetHeader>
                 <SheetTitle>Subcategory Details</SheetTitle>
             </SheetHeader>
-            <div v-if="subcategory" class="py-6 space-y-6 h-[calc(100vh-1rem)] overflow-y-auto custom-scroll">
+            <div v-if="subcategory" class="p-6 space-y-6 h-[calc(100vh-1rem)] overflow-y-auto custom-scroll">
                 <div class="flex flex-col items-center gap-4">
                     <div class="relative group" :class="subcategory.is_active ? 'cursor-pointer' : 'cursor-not-allowed'"
                         @click="triggerFileInput">
@@ -83,7 +83,7 @@
                                     @update:model-value="(val) => toggleAttribute(attr, !!val)" />
                                 <label :for="`attr-${attr.id}`" class="text-sm font-medium leading-none cursor-pointer">
                                     {{ attr.name }} <span class="text-xs text-gray-400 font-normal">({{ attr.type
-                                        }})</span>
+                                    }})</span>
                                 </label>
                             </div>
                         </div>
