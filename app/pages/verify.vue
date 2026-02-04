@@ -17,9 +17,10 @@
                     </div>
 
                     <div class="code-inputs">
-                        <InputOTP v-model="otpCode" :maxlength="5" :disabled="isLoading">
-                            <InputOTPGroup>
-                                <InputOTPSlot v-for="(_, index) in 5" :key="index" :index="index" />
+                        <InputOTP v-model="otpCode" :maxlength="5" :disabled="isLoading" :pattern="REGEXP_ONLY_DIGITS"
+                            @complete="handleVerify">
+                            <InputOTPGroup class="space-x-2">
+                                <InputOTPSlot v-for="(_, index) in 5" :key="index" :index="index" class="w-10 h-10" />
                             </InputOTPGroup>
                         </InputOTP>
                     </div>
@@ -53,6 +54,7 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from '@/components/ui/input-otp'
+import { REGEXP_ONLY_DIGITS } from 'vue-input-otp'
 
 definePageMeta({
     auth: {
