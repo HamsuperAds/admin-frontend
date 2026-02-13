@@ -84,7 +84,7 @@
                 <CardHeader class="pb-3">
                     <div class="flex items-center justify-between">
                         <CardTitle class="text-base font-semibold">Latest Users</CardTitle>
-                        <button class="text-xs text-blue-600 hover:underline">view all</button>
+                        <NuxtLink to="/users" class="text-xs text-blue-600 hover:underline">view all</NuxtLink>
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">
@@ -119,7 +119,7 @@
                 <CardHeader class="pb-3">
                     <div class="flex items-center justify-between">
                         <CardTitle class="text-base font-semibold">Latest Transactions</CardTitle>
-                        <button class="text-xs text-blue-600 hover:underline">view all</button>
+                        <NuxtLink to="/transactions" class="text-xs text-blue-600 hover:underline">view all</NuxtLink>
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">
@@ -151,7 +151,7 @@
                 <CardHeader class="pb-3">
                     <div class="flex items-center justify-between">
                         <CardTitle class="text-base font-semibold">Latest Feedback</CardTitle>
-                        <button class="text-xs text-blue-600 hover:underline">view all</button>
+                        <NuxtLink to="/feedback" class="text-xs text-blue-600 hover:underline">view all</NuxtLink>
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">
@@ -187,7 +187,7 @@
             <CardHeader class="pb-3">
                 <div class="flex items-center justify-between">
                     <CardTitle class="text-base font-semibold">Recent ads</CardTitle>
-                    <button class="text-xs text-blue-600 hover:underline">View all ads</button>
+                    <NuxtLink to="/ads" class="text-xs text-blue-600 hover:underline">View all ads</NuxtLink>
                 </div>
             </CardHeader>
             <CardContent>
