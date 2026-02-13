@@ -1,4 +1,15 @@
 <template>
+    <!-- Screen Size Restriction Overlay -->
+    <div
+        class="fixed inset-0 z-[100] bg-gray-900 text-white flex flex-col items-center justify-center p-6 text-center md:hidden">
+        <Icon name="lucide:monitor-off" class="w-16 h-16 mb-6 text-gray-400" />
+        <h1 class="text-2xl font-bold mb-2">Desktop View Only</h1>
+        <p class="text-gray-300 max-w-md">
+            This admin panel is optimized for larger screens. Please switch to a tablet, laptop, or desktop computer to
+            continue.
+        </p>
+    </div>
+
     <div class="flex h-screen overflow-hidden bg-gray-100">
         <!-- Sidebar -->
         <aside class="w-72 bg-[#3b9dd8] text-white flex flex-col">
