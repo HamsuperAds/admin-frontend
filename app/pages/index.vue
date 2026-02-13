@@ -47,8 +47,8 @@ import { useUserInfoStore } from '~/stores/userInfo'
 
 const router = useRouter()
 const { fetchPost } = useApi()
-const email = ref('admin@hamsuper.test')
-const password = ref('admin123')
+const email = ref(''); //admin@hamsuper.test
+const password = ref(''); //admin123
 const showPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
