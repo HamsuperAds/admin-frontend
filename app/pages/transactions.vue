@@ -148,6 +148,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
+
+useSeoMeta({
+  title: 'Transactions - Hamsuper',
+  description: 'Monitor and manage all financial transactions on Hamsuper.'
+})
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {

@@ -56,6 +56,11 @@ import {
 } from '@/components/ui/input-otp'
 import { REGEXP_ONLY_DIGITS } from 'vue-input-otp'
 
+useSeoMeta({
+  title: 'Verify Login - Hamsuper',
+  description: 'Verify your identity to access the Hamsuper Admin Panel.'
+})
+
 definePageMeta({
     auth: {
         unauthenticatedOnly: true,

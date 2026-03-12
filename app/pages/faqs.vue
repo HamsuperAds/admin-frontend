@@ -120,6 +120,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
+
+useSeoMeta({
+  title: 'FAQs - Hamsuper',
+  description: 'Manage frequently asked questions for Hamsuper.'
+})
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'vue-sonner'

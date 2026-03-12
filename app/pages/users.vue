@@ -164,6 +164,11 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { toast } from 'vue-sonner'
+
+useSeoMeta({
+  title: 'Users - Hamsuper',
+  description: 'Manage Hamsuper users, their statuses, and activities.'
+})
 import { watchDebounced } from '@vueuse/core'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

@@ -196,6 +196,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
+
+useSeoMeta({
+  title: 'Administrators - Hamsuper',
+  description: 'Manage Hamsuper administrators and their roles.'
+})
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

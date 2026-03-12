@@ -192,6 +192,11 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+
+useSeoMeta({
+  title: 'My Profile - Hamsuper',
+  description: 'Manage your Hamsuper admin profile and account settings.'
+})
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'

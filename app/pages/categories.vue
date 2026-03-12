@@ -183,6 +183,11 @@
 import { ref, onMounted, watch } from 'vue'
 import { toast } from 'vue-sonner'
 
+useSeoMeta({
+  title: 'Categories - Hamsuper',
+  description: 'Manage Hamsuper categories and subcategories.'
+})
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {

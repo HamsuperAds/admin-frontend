@@ -242,6 +242,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 
+useSeoMeta({
+  title: 'Hamsuper Dashboard',
+  description: 'Overview of the Hamsuper Admin Panel including statistics and recent activities.'
+})
+
 definePageMeta({
     layout: 'dashboard'
 })

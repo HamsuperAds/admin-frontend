@@ -162,6 +162,11 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { Button } from '@/components/ui/button'
+
+useSeoMeta({
+  title: 'User Feedback - Hamsuper',
+  description: 'Manage user feedback, ratings, and reviews on Hamsuper.'
+})
 import {
     DropdownMenu,
     DropdownMenuContent,

@@ -139,6 +139,11 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
+
+useSeoMeta({
+  title: 'Ads - Hamsuper',
+  description: 'Manage and monitor all advertisements on Hamsuper.'
+})
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

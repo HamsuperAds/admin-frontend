@@ -45,6 +45,11 @@
 import { useRouter } from 'vue-router'
 import { useUserInfoStore } from '~/stores/userInfo'
 
+useSeoMeta({
+  title: 'Hamsuper Admin Panel Login',
+  description: 'Login to the Hamsuper Admin Panel to manage users, ads, transactions, and more.'
+})
+
 const router = useRouter()
 const { fetchPost } = useApi()
 const email = ref(''); //admin@hamsuper.test

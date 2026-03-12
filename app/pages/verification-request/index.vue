@@ -213,6 +213,11 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { Badge } from '@/components/ui/badge'
+
+useSeoMeta({
+  title: 'Verification Requests - Hamsuper',
+  description: 'Manage user identity verification requests.'
+})
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {

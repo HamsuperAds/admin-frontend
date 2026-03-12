@@ -357,6 +357,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
+
+useSeoMeta({
+  title: 'Verification Request Details - Hamsuper',
+  description: 'View details of a specific user verification request.'
+})
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
