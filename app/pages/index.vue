@@ -46,9 +46,16 @@ import { useRouter } from 'vue-router'
 import { useUserInfoStore } from '~/stores/userInfo'
 
 useSeoMeta({
-  title: 'Hamsuper Admin Panel Login',
-  description: 'Login to the Hamsuper Admin Panel to manage users, ads, transactions, and more.'
+    title: 'Hamsuper Admin Panel Login',
+    description: 'Login to the Hamsuper Admin Panel to manage users, ads, transactions, and more.'
 })
+
+definePageMeta({
+    auth: {
+        unauthenticatedOnly: true,
+        navigateAuthenticatedTo: "/dashboard",
+    },
+});
 
 const router = useRouter()
 const { fetchPost } = useApi()

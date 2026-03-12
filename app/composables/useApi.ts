@@ -39,11 +39,11 @@ export const useApi = () => {
       headers,
       // Handle errors globally
       onResponseError({ response }) {
-        if (response.status === 401) {
+        if (response.status === 401 && !endpoint.includes('login') && !endpoint.includes('sign-in')) {
           // Token expired or invalid - redirect to login
           if (process.client) {
             localStorage.removeItem("authToken");
-            navigateTo("/auth/login");
+            navigateTo("/");
           }
         }
       },
@@ -79,10 +79,10 @@ export const useApi = () => {
         method: fetchOptions.method as any,
       });
     } catch (error: any) {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401 && !endpoint.includes('login') && !endpoint.includes('sign-in')) {
         if (process.client) {
           localStorage.removeItem("authToken");
-          navigateTo("/auth/login");
+          navigateTo("/");
         }
       }
       throw error;
