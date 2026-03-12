@@ -71,7 +71,6 @@ const handleLogin = async () => {
         if (response.success && response.requires_2fa) {
             // Store email for verification page
             userInfoStore.adminEmail = email.value;
-            console.log('login successful');
             // Navigate to verify page
             await router.push('/verify')
         } else if (!response.success) {
